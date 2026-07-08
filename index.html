@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Aditya Shankar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,500&family=Work+Sans:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#EDE6D6;
+    --ink-dim:#B8AF9B;
+    --bg:#171510;
+    --bg-raised:#1F1C15;
+    --moss:#8A9A5B;
+    --rust:#C1502E;
+    --line: rgba(237,230,214,0.14);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Work Sans', sans-serif;
+    overflow-x:hidden;
+  }
+  ::selection{ background:var(--rust); color:var(--bg); }
+
+  /* header */
+  header{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:28px 5vw; font-family:'JetBrains Mono', monospace; font-size:13px;
+    color:var(--ink-dim);
+  }
+  .wave{ display:flex; align-items:center; gap:10px; color:var(--moss); }
+  .wave span{ font-size:16px; }
+  .clock{ text-align:right; line-height:1.2; }
+  .clock b{ color:var(--ink); font-size:16px; }
+
+  /* hero */
+  .hero{
+    min-height:78vh;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; padding:0 5vw; position:relative;
+  }
+  .eyebrow{
+    font-family:'JetBrains Mono', monospace; font-size:12px; letter-spacing:.14em;
+    color:var(--rust); text-transform:uppercase; margin-bottom:22px;
+  }
+  h1{
+    font-family:'Newsreader', serif; font-weight:600;
+    font-size:clamp(3.2rem, 9vw, 7.5rem);
+    line-height:0.96;
+    letter-spacing:-0.01em;
+  }
+  h1 em{ font-style:italic; font-weight:500; color:var(--moss); }
+  .tagline{
+    margin-top:26px; max-width:520px; color:var(--ink-dim);
+    font-size:16px; line-height:1.6;
+  }
+
+  /* field log ticker — signature element */
+  .fieldlog{
+    border-top:1px solid var(--line); border-bottom:1px solid var(--line);
+    padding:14px 0; overflow:hidden; white-space:nowrap; position:relative;
+  }
+  .fieldlog-track{
+    display:inline-flex; gap:48px; animation:scroll 38s linear infinite;
+  }
+  .fieldlog span{
+    font-family:'JetBrains Mono', monospace; font-size:12.5px; color:var(--ink-dim);
+  }
+  .fieldlog b{ color:var(--moss); font-weight:500; }
+  @keyframes scroll{ from{ transform:translateX(0);} to{ transform:translateX(-50%);} }
+
+  /* nav pill */
+  nav{
+    position:fixed; bottom:28px; left:50%; transform:translateX(-50%);
+    display:flex; gap:4px; background:var(--bg-raised); border:1px solid var(--line);
+    border-radius:999px; padding:6px; z-index:50;
+  }
+  nav a{
+    color:var(--ink-dim); text-decoration:none; font-size:13px; font-family:'Work Sans';
+    padding:10px 18px; border-radius:999px; transition:.2s;
+  }
+  nav a:hover{ color:var(--ink); background:rgba(237,230,214,0.06); }
+  nav a.talk{ background:var(--moss); color:var(--bg); font-weight:500; }
+
+  /* sections */
+  section{ padding:120px 5vw; max-width:1100px; margin:0 auto; }
+  .section-head{ display:flex; align-items:baseline; gap:16px; margin-bottom:56px; }
+  .section-num{ font-family:'JetBrains Mono', monospace; font-size:12px; color:var(--rust); }
+  h2{ font-family:'Newsreader', serif; font-size:2.4rem; font-weight:600; }
+
+  .specimen-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(280px,1fr)); gap:1px; background:var(--line); border:1px solid var(--line); }
+  .specimen{ background:var(--bg); padding:32px; transition:.25s; }
+  .specimen:hover{ background:var(--bg-raised); }
+  .specimen .tag{ font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--rust); letter-spacing:.08em; text-transform:uppercase; margin-bottom:14px; display:block; }
+  .specimen h3{ font-family:'Newsreader', serif; font-size:1.5rem; font-weight:500; margin-bottom:10px; }
+  .specimen p{ color:var(--ink-dim); font-size:14px; line-height:1.6; }
+
+  .log-entry{ display:flex; gap:28px; padding:24px 0; border-bottom:1px solid var(--line); }
+  .log-entry:last-child{ border-bottom:none; }
+  .log-time{ font-family:'JetBrains Mono', monospace; font-size:12px; color:var(--ink-dim); min-width:110px; padding-top:4px; }
+  .log-body h3{ font-family:'Newsreader', serif; font-size:1.3rem; font-weight:500; margin-bottom:6px; }
+  .log-body p{ color:var(--ink-dim); font-size:14px; line-height:1.6; max-width:560px; }
+
+  footer{ text-align:center; padding:60px 0 140px; font-family:'JetBrains Mono', monospace; font-size:12px; color:var(--ink-dim); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wave"><span>✎</span> field notes</div>
+  <div class="clock" id="clock"><b>--:--</b><br/>-- --</div>
+</header>
+
+<section class="hero">
+  <div class="eyebrow">Specimen No. 0178H — Hyderabad Field Station</div>
+  <h1>Aditya <em>Shankar</em></h1>
+  <p class="tagline">CS student at BITS Pilani, currently cataloguing neural nets and transformers.
+  Off the clock: chasing birds with a camera and reading too much into chemistry.</p>
+</section>
+
+<div class="fieldlog">
+  <div class="fieldlog-track">
+    <span><b>07:02</b> — spotted: PyTorch</span>
+    <span><b>07:14</b> — spotted: Self-Attention</span>
+    <span><b>07:31</b> — spotted: BPE Tokenizer</span>
+    <span><b>08:05</b> — spotted: Chemistry</span>
+    <span><b>08:40</b> — spotted: Photography</span>
+    <span><b>09:12</b> — spotted: Birdwatching</span>
+    <span><b>07:02</b> — spotted: PyTorch</span>
+    <span><b>07:14</b> — spotted: Self-Attention</span>
+    <span><b>07:31</b> — spotted: BPE Tokenizer</span>
+    <span><b>08:05</b> — spotted: Chemistry</span>
+    <span><b>08:40</b> — spotted: Photography</span>
+    <span><b>09:12</b> — spotted: Birdwatching</span>
+  </div>
+</div>
+
+<section id="projects">
+  <div class="section-head"><span class="section-num">01</span><h2>Projects</h2></div>
+  <div class="specimen-grid">
+    <div class="specimen">
+      <span class="tag">In progress</span>
+      <h3>GPT-2, from scratch</h3>
+      <p>Mini GPT-2 in raw PyTorch — custom BPE tokenizer, multi-head self-attention, no HuggingFace. Trained on Sherlock Holmes.</p>
+    </div>
+    <div class="specimen">
+      <span class="tag">Bioinformatics</span>
+      <h3>Huntington's Classifier</h3>
+      <p>Replicated an Alzheimer's methylation-classifier methodology on HD gene expression data. SVM hit 0.996 test AUC.</p>
+    </div>
+    <div class="specimen">
+      <span class="tag">LLM pipeline</span>
+      <h3>Drug Descriptor Extractor</h3>
+      <p>Dual-LLM extraction and verification pipeline for physicochemical drug properties, run locally on dual 4090s.</p>
+    </div>
+    <div class="specimen">
+      <span class="tag">Web</span>
+      <h3>Personal Music Player</h3>
+      <p>Built because ads got old. HTML/CSS/JS, deployed on Vercel, mobile-first with folder-based navigation.</p>
+    </div>
+  </div>
+</section>
+
+<section id="experience">
+  <div class="section-head"><span class="section-num">02</span><h2>Field Log</h2></div>
+  <div>
+    <div class="log-entry">
+      <div class="log-time">2026 — PS-1</div>
+      <div class="log-body"><h3>CDFD Hyderabad</h3><p>Intern under Prof. Jeevan Jaidi, replicating disease-classification methodology on genomic data.</p></div>
+    </div>
+    <div class="log-entry">
+      <div class="log-time">Ongoing</div>
+      <div class="log-body"><h3>CRUx, BITS Pilani</h3><p>Technical club — currently deep in a 14-day GPT-2-from-scratch induction task.</p></div>
+    </div>
+  </div>
+</section>
+
+<footer>Aditya Shankar — logged from Hyderabad</footer>
+
+<nav>
+  <a href="#projects">Projects</a>
+  <a href="#experience">Experience</a>
+  <a href="#" class="talk">Let's talk →</a>
+</nav>
+
+<script>
+  function tick(){
+    const d = new Date();
+    let h = d.getHours(), m = d.getMinutes();
+    const ampm = h >= 12 ? 'pm' : 'am';
+    h = h % 12 || 12;
+    const time = `${h}:${m.toString().padStart(2,'0')}`;
+    const date = d.toLocaleDateString('en-US', { month:'short', day:'numeric' });
+    document.getElementById('clock').innerHTML = `<b>${time}</b> ${ampm}<br/>${date}`;
+  }
+  tick(); setInterval(tick, 1000*30);
+</script>
+
+</body>
+</html>

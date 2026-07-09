@@ -10,7 +10,7 @@
 <style>
   :root{
     --ink:#EDE6D6;
-    --ink-dim:#B8AF9B;
+    --ink-dim:#F0EDE6;
     --bg:#171510;
     --bg-raised:#1F1C15;
     --moss:#8A9A5B;
@@ -97,7 +97,7 @@
     text-align:center; padding:0 5vw; position:relative;
   }
   .eyebrow{
-    font-family:'JetBrains Mono', monospace; font-size:12px; letter-spacing:.14em;
+    font-family:'JetBrains Mono', monospace; font-size:13px; font-weight:700; letter-spacing:.14em;
     color:var(--rust); text-transform:uppercase; margin-bottom:22px;
   }
   .hero h1{
@@ -125,16 +125,25 @@
   }
   @keyframes lang-cycle{
     0%{ content:"Shankar"; opacity:1; }
-    8%{ opacity:0; } 10%{ opacity:1; }
-    20%{ content:"शंकर"; opacity:1; }
-    28%{ opacity:0; } 30%{ opacity:1; }
-    40%{ content:"シャンカル"; opacity:1; }
-    48%{ opacity:0; } 50%{ opacity:1; }
-    60%{ content:"샹카르"; opacity:1; }
-    68%{ opacity:0; } 70%{ opacity:1; }
-    80%{ content:"商卡尔"; opacity:1; }
-    88%{ opacity:0; } 90%{ opacity:1; }
-    100%{ content:"Shankar"; opacity:1; }
+    16%{ opacity:1; }
+    18%{ opacity:0; }
+    20%{ content:"शंकर"; opacity:0; }
+    22%{ opacity:1; }
+    36%{ opacity:1; }
+    38%{ opacity:0; }
+    40%{ content:"シャンカル"; opacity:0; }
+    42%{ opacity:1; }
+    56%{ opacity:1; }
+    58%{ opacity:0; }
+    60%{ content:"샹카르"; opacity:0; }
+    62%{ opacity:1; }
+    76%{ opacity:1; }
+    78%{ opacity:0; }
+    80%{ content:"商卡尔"; opacity:0; }
+    82%{ opacity:1; }
+    96%{ opacity:1; }
+    98%{ opacity:0; }
+    100%{ content:"Shankar"; opacity:0; }
   }
   .tagline{
     margin-top:26px; max-width:520px; color:var(--ink-dim);
@@ -188,7 +197,7 @@
       flex-wrap: nowrap;
       width: max-content;
       gap: 32px;
-      padding-right: 5vw;
+      padding-right: 12vw;
     }
     .specimen-grid.rail-mode .specimen {
       width: 420px;
@@ -197,21 +206,21 @@
   }
   .specimen{
     display:block; text-decoration:none; color:inherit; position:relative;
-    --sp-blur: 1px;
+    --sp-blur: 3px;
     --sp-sat: 180%;
     transform-style: preserve-3d;
-    background:
-      radial-gradient(circle at var(--x, 50%) var(--y, 50%), rgba(255,255,255,0.12) 0%, transparent 60%),
-      linear-gradient(160deg, rgba(255,255,255,0.12), rgba(255,255,255,0.03));
+    background: rgba(0,0,0,0.2);
     backdrop-filter:url(#card-glass-distortion) blur(var(--sp-blur)) saturate(var(--sp-sat));
     -webkit-backdrop-filter:url(#card-glass-distortion) blur(var(--sp-blur)) saturate(var(--sp-sat));
     border:1px solid rgba(255,255,255,0.18);
     border-radius:18px;
     box-shadow:0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.15);
     padding:32px; transition:.3s cubic-bezier(.2,.8,.2,1); cursor:pointer;
+    overflow:hidden;
   }
+  .specimen > *{ position:relative; z-index:2; }
   .specimen:hover{
-    background:linear-gradient(160deg, rgba(255,255,255,0.20), rgba(255,255,255,0.06));
+    background:rgba(0,0,0,0.15);
     border-color:var(--moss);
     transform:translateY(-6px);
     box-shadow:0 16px 40px rgba(0,0,0,0.4), 0 0 0 1px var(--moss), inset 0 1px 0 rgba(255,255,255,0.2);
@@ -221,7 +230,7 @@
     transition:.3s ease; color:var(--moss); font-size:18px;
   }
   .specimen:hover .arrow{ opacity:1; transform:translate(0,0); }
-  .specimen .tag{ font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--rust); letter-spacing:.08em; text-transform:uppercase; margin-bottom:14px; display:block; }
+  .specimen .tag{ font-family:'JetBrains Mono', monospace; font-size:12px; font-weight:700; color:var(--rust); letter-spacing:.08em; text-transform:uppercase; margin-bottom:14px; display:block; }
   .specimen h3{ font-family:'Newsreader', serif; font-size:1.5rem; font-weight:500; margin-bottom:10px; }
   .specimen p{ color:var(--ink-dim); font-size:14px; line-height:1.6; }
 
@@ -240,11 +249,11 @@
     opacity: 0; transition: opacity 0.3s;
   }
   body.has-custom-cursor .cursor-dot, body.has-custom-cursor .cursor-ring { opacity: 1; }
-  .cursor-dot { width: 6px; height: 6px; background: var(--rust); mix-blend-mode: difference; }
+  .cursor-dot { width: 6px; height: 6px; background: #fff; mix-blend-mode: difference; }
   .cursor-ring {
-    width: 24px; height: 24px; border: 1.5px solid var(--rust);
+    width: 24px; height: 24px; border: 1.5px solid #fff;
     mix-blend-mode: difference;
-    box-shadow: 0 0 0 0 rgba(193,80,46,0.25);
+    box-shadow: 0 0 0 0 rgba(255,255,255,0.25);
     transition: width 0.3s, height 0.3s, border-color 0.3s, background-color 0.3s, box-shadow 0.3s;
   }
   .cursor-ripple {
@@ -272,15 +281,15 @@
         <feBlend in="rg" in2="blue" mode="screen" result="output" />
         <feGaussianBlur in="output" stdDeviation="0.5" />
       </filter>
-      <filter id="card-glass-distortion" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB">
+      <filter id="card-glass-distortion" x="-30%" y="-30%" width="160%" height="160%" color-interpolation-filters="sRGB">
         <feImage x="0" y="0" width="100%" height="100%" preserveAspectRatio="none" result="map"
-          href="data:image/svg+xml,%3Csvg viewBox='0 0 400 280' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3ClinearGradient id='rg' x1='100%25' y1='0%25' x2='0%25' y2='0%25'%3E%3Cstop offset='0%25' stop-color='%230000'/%3E%3Cstop offset='100%25' stop-color='red'/%3E%3C/linearGradient%3E%3ClinearGradient id='gg' x1='0%25' y1='100%25' x2='0%25' y2='0%25'%3E%3Cstop offset='0%25' stop-color='%230000'/%3E%3Cstop offset='100%25' stop-color='%2300ff00'/%3E%3C/linearGradient%3E%3ClinearGradient id='bg' x1='0%25' y1='0%25' x2='0%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%230000'/%3E%3Cstop offset='100%25' stop-color='blue'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='400' height='280' fill='black'/%3E%3Crect width='400' height='280' rx='18' fill='url(%23rg)'/%3E%3Crect width='400' height='280' rx='18' fill='url(%23gg)' style='mix-blend-mode:screen'/%3E%3Crect width='400' height='280' rx='18' fill='url(%23bg)' style='mix-blend-mode:screen'/%3E%3Crect x='2' y='2' width='396' height='276' rx='18' fill='hsl(0 0%25 50%25 / 0.9)' style='filter:blur(10px)'/%3E%3C/svg%3E"
-          xlink:href="data:image/svg+xml,%3Csvg viewBox='0 0 400 280' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3ClinearGradient id='rg' x1='100%25' y1='0%25' x2='0%25' y2='0%25'%3E%3Cstop offset='0%25' stop-color='%230000'/%3E%3Cstop offset='100%25' stop-color='red'/%3E%3C/linearGradient%3E%3ClinearGradient id='gg' x1='0%25' y1='100%25' x2='0%25' y2='0%25'%3E%3Cstop offset='0%25' stop-color='%230000'/%3E%3Cstop offset='100%25' stop-color='%2300ff00'/%3E%3C/linearGradient%3E%3ClinearGradient id='bg' x1='0%25' y1='0%25' x2='0%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%230000'/%3E%3Cstop offset='100%25' stop-color='blue'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='400' height='280' fill='black'/%3E%3Crect width='400' height='280' rx='18' fill='url(%23rg)'/%3E%3Crect width='400' height='280' rx='18' fill='url(%23gg)' style='mix-blend-mode:screen'/%3E%3Crect width='400' height='280' rx='18' fill='url(%23bg)' style='mix-blend-mode:screen'/%3E%3Crect x='2' y='2' width='396' height='276' rx='18' fill='hsl(0 0%25 50%25 / 0.9)' style='filter:blur(10px)'/%3E%3C/svg%3E" />
-        <feDisplacementMap in="SourceGraphic" in2="map" result="dispRed" scale="-260" xChannelSelector="R" yChannelSelector="G" />
+          href="data:image/svg+xml,%3Csvg viewBox='0 0 400 280' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3ClinearGradient id='rg' x1='100%25' y1='0%25' x2='0%25' y2='0%25'%3E%3Cstop offset='0%25' stop-color='%230000'/%3E%3Cstop offset='100%25' stop-color='red'/%3E%3C/linearGradient%3E%3ClinearGradient id='gg' x1='0%25' y1='100%25' x2='0%25' y2='0%25'%3E%3Cstop offset='0%25' stop-color='%230000'/%3E%3Cstop offset='100%25' stop-color='%2300ff00'/%3E%3C/linearGradient%3E%3ClinearGradient id='bg' x1='0%25' y1='0%25' x2='0%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%230000'/%3E%3Cstop offset='100%25' stop-color='blue'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='400' height='280' fill='black'/%3E%3Crect width='400' height='280' rx='18' fill='url(%23rg)'/%3E%3Crect width='400' height='280' rx='18' fill='url(%23gg)' style='mix-blend-mode:screen'/%3E%3Crect width='400' height='280' rx='18' fill='url(%23bg)' style='mix-blend-mode:screen'/%3E%3Crect x='45' y='45' width='310' height='190' rx='16' fill='hsl(0 0%25 50%25 / 0.95)' style='filter:blur(28px)'/%3E%3C/svg%3E"
+          xlink:href="data:image/svg+xml,%3Csvg viewBox='0 0 400 280' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3ClinearGradient id='rg' x1='100%25' y1='0%25' x2='0%25' y2='0%25'%3E%3Cstop offset='0%25' stop-color='%230000'/%3E%3Cstop offset='100%25' stop-color='red'/%3E%3C/linearGradient%3E%3ClinearGradient id='gg' x1='0%25' y1='100%25' x2='0%25' y2='0%25'%3E%3Cstop offset='0%25' stop-color='%230000'/%3E%3Cstop offset='100%25' stop-color='%2300ff00'/%3E%3C/linearGradient%3E%3ClinearGradient id='bg' x1='0%25' y1='0%25' x2='0%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%230000'/%3E%3Cstop offset='100%25' stop-color='blue'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='400' height='280' fill='black'/%3E%3Crect width='400' height='280' rx='18' fill='url(%23rg)'/%3E%3Crect width='400' height='280' rx='18' fill='url(%23gg)' style='mix-blend-mode:screen'/%3E%3Crect width='400' height='280' rx='18' fill='url(%23bg)' style='mix-blend-mode:screen'/%3E%3Crect x='45' y='45' width='310' height='190' rx='16' fill='hsl(0 0%25 50%25 / 0.95)' style='filter:blur(28px)'/%3E%3C/svg%3E" />
+        <feDisplacementMap in="SourceGraphic" in2="map" result="dispRed" scale="-90" xChannelSelector="R" yChannelSelector="G" />
         <feColorMatrix in="dispRed" type="matrix" values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" result="red" />
-        <feDisplacementMap in="SourceGraphic" in2="map" result="dispGreen" scale="-230" xChannelSelector="R" yChannelSelector="G" />
+        <feDisplacementMap in="SourceGraphic" in2="map" result="dispGreen" scale="-80" xChannelSelector="R" yChannelSelector="G" />
         <feColorMatrix in="dispGreen" type="matrix" values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0" result="green" />
-        <feDisplacementMap in="SourceGraphic" in2="map" result="dispBlue" scale="-200" xChannelSelector="R" yChannelSelector="G" />
+        <feDisplacementMap in="SourceGraphic" in2="map" result="dispBlue" scale="-70" xChannelSelector="R" yChannelSelector="G" />
         <feColorMatrix in="dispBlue" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0" result="blue" />
         <feBlend in="red" in2="green" mode="screen" result="rg" />
         <feBlend in="rg" in2="blue" mode="screen" result="output" />
@@ -293,7 +302,7 @@
   <div class="scroll-progress"></div>
 
 
-<canvas id="particle-bg" style="position:fixed; inset:0; z-index:-3; pointer-events:none;"></canvas>
+<canvas id="particle-bg" style="position:fixed; inset:0; z-index:-1; pointer-events:none;"></canvas>
 
 <div class="bg-image"></div>
 
@@ -337,7 +346,7 @@
       ctx.beginPath();
       ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
       ctx.fillStyle = p.color;
-      ctx.globalAlpha = 0.55;
+      ctx.globalAlpha = 0.95;
       ctx.fill();
     }
     ctx.globalAlpha = 1;
@@ -350,7 +359,7 @@
           ctx.beginPath();
           ctx.moveTo(a.x, a.y);
           ctx.lineTo(b.x, b.y);
-          ctx.strokeStyle = 'rgba(180,180,170,' + (1 - dist / (LINK_DIST * dpr)) * 0.25 + ')';
+          ctx.strokeStyle = 'rgba(180,180,170,' + (1 - dist / (LINK_DIST * dpr)) * .4 + ')';
           ctx.lineWidth = 1;
           ctx.stroke();
         }
@@ -362,7 +371,7 @@
           ctx.beginPath();
           ctx.moveTo(particles[i].x, particles[i].y);
           ctx.lineTo(mouse.x, mouse.y);
-          ctx.strokeStyle = 'rgba(193,80,46,' + (1 - dist / (GRAB_DIST * dpr)) * 0.4 + ')';
+          ctx.strokeStyle = 'rgba(140,180,255,' + (1 - dist / (GRAB_DIST * dpr)) * .8 + ')';
           ctx.lineWidth = 1;
           ctx.stroke();
         }
@@ -645,7 +654,7 @@
     
     if (desktop) {
       grid.classList.add('rail-mode');
-      let getScrollAmount = () => -(grid.scrollWidth - window.innerWidth + 100);
+      let getScrollAmount = () => -(grid.scrollWidth - window.innerWidth + 300);
       
       railTween = gsap.to(grid, {
         x: getScrollAmount,
@@ -655,7 +664,7 @@
       ScrollTrigger.create({
         trigger: "#projects",
         start: "top 10%", // pin slightly below top to show section head
-        end: () => `+=${grid.scrollWidth - window.innerWidth + 100}`,
+        end: () => `+=${grid.scrollWidth - window.innerWidth + 300}`,
         pin: true,
         animation: railTween,
         scrub: 1,
@@ -697,22 +706,7 @@
         onLeaveBack: resetReveal
       });
 
-      // 8. Scroll-Linked Glass Refraction
-      const tlCard = gsap.timeline({
-        scrollTrigger: {
-          trigger: card,
-          start: desktop ? 'left right' : 'top bottom',
-          end: desktop ? 'right left' : 'bottom top',
-          scrub: true,
-          containerAnimation: desktop ? railTween : null
-        }
-      });
-      tlCard.fromTo(card, 
-        { '--sp-blur': '22px', '--sp-sat': '180%' },
-        { '--sp-blur': '4px', '--sp-sat': '100%', ease: 'none' }
-      ).to(card, 
-        { '--sp-blur': '22px', '--sp-sat': '180%', ease: 'none' }
-      );
+      
 
       // 10. Magnetic Card Tilt & CSS Cursor Follow (runs regardless of breakpoint)
       const xTo = gsap.quickTo(card, "rotationY", {duration: 0.4, ease: "power3"}),
@@ -845,7 +839,7 @@
       });
       target.addEventListener('mouseleave', () => {
         isHoveringTarget = false;
-        gsap.to(cursorRing, { scale: 1, borderColor: 'var(--rust)', backgroundColor: 'transparent', boxShadow: '0 0 0 0 rgba(193,80,46,0)', duration: 0.3 });
+        gsap.to(cursorRing, { scale: 1, borderColor: 'var(--rust)', backgroundColor: 'transparent', boxShadow: '0 0 0 0 rgba(255,255,255,0)', duration: 0.3 });
         gsap.to(cursorDot, { scale: 1, duration: 0.2 });
       });
     });

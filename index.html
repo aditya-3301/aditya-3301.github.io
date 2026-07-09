@@ -5,13 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Aditya Shankar</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,500&family=Work+Sans:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,500&family=Work+Sans:wght@400;500&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+Devanagari:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
   :root{
-    --glow-opacity-multiplier: 1;
-    --blur-strength: 1;
-
     --ink:#EDE6D6;
     --ink-dim:#B8AF9B;
     --bg:#171510;
@@ -116,14 +113,15 @@
   .letters .letter{ display:inline-block; transition:color .3s ease, transform .3s ease; cursor:default; }
   .letters .letter:hover{ color:var(--hc); transform:translateY(-0.08em) rotate(-3deg); }
   .lang-cycle{
-    position:relative; display:inline-block; flex-shrink:1; min-width:0;
-    white-space:nowrap; word-break:keep-all; overflow-wrap:normal; overflow:hidden;
-    font-size:0.68em; vertical-align:baseline;
+    position:relative; display:inline-block; flex-shrink:0; min-width:0;
+    white-space:nowrap; word-break:keep-all; overflow-wrap:normal; overflow:visible;
+    font-size:0.68em; vertical-align:baseline; line-height:1.3;
   }
   .lang-cycle::after{
     display:inline-block; white-space:nowrap; word-break:keep-all;
     content:"Shankar";
     animation:lang-cycle 15s ease-in-out infinite;
+    font-family:'Noto Sans Devanagari', 'Newsreader', serif;
   }
   @keyframes lang-cycle{
     0%{ content:"Shankar"; opacity:1; }
@@ -174,20 +172,14 @@
   .section-num{ font-family:'JetBrains Mono', monospace; font-size:12px; color:var(--rust); }
   .section-head h2{ font-family:'Newsreader', serif; font-size:2.4rem; font-weight:600; }
 
-  .bg-checker{
+  .bg-image{
     position:fixed; inset:0; z-index:-2; pointer-events:none;
-    background-image:
-      linear-gradient(45deg, var(--bg-raised) 25%, transparent 25%, transparent 75%, var(--bg-raised) 75%, var(--bg-raised)),
-      linear-gradient(45deg, var(--bg-raised) 25%, transparent 25%, transparent 75%, var(--bg-raised) 75%, var(--bg-raised));
-    background-size:56px 56px;
-    background-position:0 0, 28px 28px;
-    opacity:0.5;
+    background-image:url('image.jpg');
+    background-size:cover;
+    background-position:center;
+    transform: translateZ(0);
+    backface-visibility: hidden;
   }
-  .bg-glow{ position:fixed; inset:0; z-index:-1; overflow:hidden; pointer-events:none; }
-  .bg-glow .glow{ position:absolute; border-radius:50%; filter:blur(calc(110px * var(--blur-strength))); }
-  .bg-glow .glow-1{ width:480px; height:480px; background:var(--moss); opacity:calc(0.3 * var(--glow-opacity-multiplier)); top:-140px; left:-120px; }
-  .bg-glow .glow-2{ width:440px; height:440px; background:var(--rust); opacity:calc(0.28 * var(--glow-opacity-multiplier)); top:35%; right:-140px; }
-  .bg-glow .glow-3{ width:380px; height:380px; background:var(--amber, #D6A24C); opacity:calc(0.22 * var(--glow-opacity-multiplier)); bottom:-160px; left:40%; }
 
   .specimen-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(280px,1fr)); gap:18px; background:transparent; border:none; perspective: 1000px; }
   @media (min-width: 768px) {
@@ -205,14 +197,14 @@
   }
   .specimen{
     display:block; text-decoration:none; color:inherit; position:relative;
-    --sp-blur: 22px;
+    --sp-blur: 1px;
     --sp-sat: 180%;
     transform-style: preserve-3d;
     background:
       radial-gradient(circle at var(--x, 50%) var(--y, 50%), rgba(255,255,255,0.12) 0%, transparent 60%),
       linear-gradient(160deg, rgba(255,255,255,0.12), rgba(255,255,255,0.03));
-    backdrop-filter:blur(var(--sp-blur)) saturate(var(--sp-sat));
-    -webkit-backdrop-filter:blur(var(--sp-blur)) saturate(var(--sp-sat));
+    backdrop-filter:url(#card-glass-distortion) blur(var(--sp-blur)) saturate(var(--sp-sat));
+    -webkit-backdrop-filter:url(#card-glass-distortion) blur(var(--sp-blur)) saturate(var(--sp-sat));
     border:1px solid rgba(255,255,255,0.18);
     border-radius:18px;
     box-shadow:0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.15);
@@ -280,6 +272,20 @@
         <feBlend in="rg" in2="blue" mode="screen" result="output" />
         <feGaussianBlur in="output" stdDeviation="0.5" />
       </filter>
+      <filter id="card-glass-distortion" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB">
+        <feImage x="0" y="0" width="100%" height="100%" preserveAspectRatio="none" result="map"
+          href="data:image/svg+xml,%3Csvg viewBox='0 0 400 280' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3ClinearGradient id='rg' x1='100%25' y1='0%25' x2='0%25' y2='0%25'%3E%3Cstop offset='0%25' stop-color='%230000'/%3E%3Cstop offset='100%25' stop-color='red'/%3E%3C/linearGradient%3E%3ClinearGradient id='gg' x1='0%25' y1='100%25' x2='0%25' y2='0%25'%3E%3Cstop offset='0%25' stop-color='%230000'/%3E%3Cstop offset='100%25' stop-color='%2300ff00'/%3E%3C/linearGradient%3E%3ClinearGradient id='bg' x1='0%25' y1='0%25' x2='0%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%230000'/%3E%3Cstop offset='100%25' stop-color='blue'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='400' height='280' fill='black'/%3E%3Crect width='400' height='280' rx='18' fill='url(%23rg)'/%3E%3Crect width='400' height='280' rx='18' fill='url(%23gg)' style='mix-blend-mode:screen'/%3E%3Crect width='400' height='280' rx='18' fill='url(%23bg)' style='mix-blend-mode:screen'/%3E%3Crect x='2' y='2' width='396' height='276' rx='18' fill='hsl(0 0%25 50%25 / 0.9)' style='filter:blur(10px)'/%3E%3C/svg%3E"
+          xlink:href="data:image/svg+xml,%3Csvg viewBox='0 0 400 280' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3ClinearGradient id='rg' x1='100%25' y1='0%25' x2='0%25' y2='0%25'%3E%3Cstop offset='0%25' stop-color='%230000'/%3E%3Cstop offset='100%25' stop-color='red'/%3E%3C/linearGradient%3E%3ClinearGradient id='gg' x1='0%25' y1='100%25' x2='0%25' y2='0%25'%3E%3Cstop offset='0%25' stop-color='%230000'/%3E%3Cstop offset='100%25' stop-color='%2300ff00'/%3E%3C/linearGradient%3E%3ClinearGradient id='bg' x1='0%25' y1='0%25' x2='0%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%230000'/%3E%3Cstop offset='100%25' stop-color='blue'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='400' height='280' fill='black'/%3E%3Crect width='400' height='280' rx='18' fill='url(%23rg)'/%3E%3Crect width='400' height='280' rx='18' fill='url(%23gg)' style='mix-blend-mode:screen'/%3E%3Crect width='400' height='280' rx='18' fill='url(%23bg)' style='mix-blend-mode:screen'/%3E%3Crect x='2' y='2' width='396' height='276' rx='18' fill='hsl(0 0%25 50%25 / 0.9)' style='filter:blur(10px)'/%3E%3C/svg%3E" />
+        <feDisplacementMap in="SourceGraphic" in2="map" result="dispRed" scale="-260" xChannelSelector="R" yChannelSelector="G" />
+        <feColorMatrix in="dispRed" type="matrix" values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" result="red" />
+        <feDisplacementMap in="SourceGraphic" in2="map" result="dispGreen" scale="-230" xChannelSelector="R" yChannelSelector="G" />
+        <feColorMatrix in="dispGreen" type="matrix" values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0" result="green" />
+        <feDisplacementMap in="SourceGraphic" in2="map" result="dispBlue" scale="-200" xChannelSelector="R" yChannelSelector="G" />
+        <feColorMatrix in="dispBlue" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0" result="blue" />
+        <feBlend in="red" in2="green" mode="screen" result="rg" />
+        <feBlend in="rg" in2="blue" mode="screen" result="output" />
+        <feGaussianBlur in="output" stdDeviation="0.5" />
+      </filter>
     </defs>
   </svg>
   <div class="cursor-dot"></div>
@@ -289,13 +295,7 @@
 
 <canvas id="particle-bg" style="position:fixed; inset:0; z-index:-3; pointer-events:none;"></canvas>
 
-<div class="bg-checker"></div>
-
-<div class="bg-glow">
-  <div class="glow glow-1"></div>
-  <div class="glow glow-2"></div>
-  <div class="glow glow-3"></div>
-</div>
+<div class="bg-image"></div>
 
 <script>
 // Lightweight particle-network background (dots + connecting lines + mouse-grab),
@@ -558,26 +558,9 @@
     }
   });
 
-  /* 11. Scroll-position reactive glow blobs */
-  const glow1 = document.querySelector('.glow-1');
-  const glow2 = document.querySelector('.glow-2');
-  const glow3 = document.querySelector('.glow-3');
-  
   /* 16. Depth-Layered Scroll Parallax (Feature 6) */
   // Foreground plane: .topnav, .cursor-dot (Multiplier 0 - unaffected, closest to user)
-  const DEPTH_BG = 0.3;   // Background plane
   const DEPTH_MID = 0.05; // Midground plane
-
-  // Background plane parallax
-  // NOTE: .bg-glow is position:fixed (always covers the viewport already), so it must NOT be
-  // driven by total document scroll height (ScrollTrigger.maxScroll(window)) - that dragged it
-  // far off-screen on long pages and caused a visible jump right where the projects rail-scroll
-  // section injects extra scroll distance. Use a small, bounded drift instead.
-  gsap.to('.bg-glow', {
-    y: 60,
-    ease: 'none',
-    scrollTrigger: { trigger: 'body', start: 'top top', end: 'bottom bottom', scrub: true, invalidateOnRefresh: true }
-  });
 
   // Midground plane parallax
   // NOTE: #projects .section-head lives inside the rail-scroll pinned section further down
@@ -590,43 +573,7 @@
     scrollTrigger: { trigger: 'body', start: 'top top', end: 'bottom bottom', scrub: true, invalidateOnRefresh: true }
   });
 
-  /* 17. Ambient Idle Animation on Glow Blobs (Feature 7) */
-  const idleTimeline = gsap.timeline({ repeat: -1, yoyo: true, paused: true });
-  idleTimeline
-    .to('.glow-1', { x: 30, y: -20, scale: 1.1, duration: 10, ease: 'sine.inOut' }, 0)
-    .to('.glow-2', { x: -40, y: 30, scale: 0.9, duration: 12, ease: 'sine.inOut' }, 0)
-    .to('.glow-3', { x: 20, y: 40, scale: 1.15, duration: 14, ease: 'sine.inOut' }, 0);
-
-  let idleTimer;
-  let isIdle = false;
-  
-  function resetIdleTimer() {
-    if (isIdle) {
-      isIdle = false;
-      idleTimeline.pause();
-    }
-    clearTimeout(idleTimer);
-    idleTimer = setTimeout(() => {
-      isIdle = true;
-      idleTimeline.play();
-    }, 2500);
-  }
-  
-  window.addEventListener('scroll', resetIdleTimer, { passive: true });
-  resetIdleTimer();
-
-  /* 18. ScrollTrigger-Driven Theme Intensity (Feature 8) */
-  gsap.to(':root', {
-    '--glow-opacity-multiplier': 2.0,
-    '--blur-strength': 1.5,
-    ease: 'none',
-    scrollTrigger: {
-      trigger: 'body',
-      start: 'top top',
-      end: 'bottom bottom',
-      scrub: 1
-    }
-  });
+  /* 18. ScrollTrigger-Driven Theme Intensity (Feature 8) — removed, was glow-only */
 
   /* 4. Section reveals: fade + rise, staggered + Text Scramble */
   const scrambleChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*';

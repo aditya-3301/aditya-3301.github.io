@@ -3,6 +3,18 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<script>
+  // Safari (mac + iOS) does not support SVG-filter references inside
+  // backdrop-filter (the url(#...) part driving the liquid-glass
+  // distortion) - the whole property is invalid there, so it just does
+  // nothing at all rather than degrading gracefully. Tag <html> before
+  // paint so the CSS fallback below can swap in a plain blur.
+  (function(){
+    const ua = navigator.userAgent;
+    const isSafari = /^((?!chrome|android|crios|fxios|edgios).)*safari/i.test(ua);
+    if (isSafari) document.documentElement.classList.add('is-safari');
+  })();
+</script>
 <title>Aditya Shankar</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,500&family=Work+Sans:wght@400;500&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+Devanagari:wght@400;500&display=swap" rel="stylesheet">
@@ -195,6 +207,37 @@
   .specimen-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(280px,1fr)); gap:18px; background:transparent; border:none; perspective: 1000px; }
   @media (max-width: 767px) {
     [data-app-nav]{ top: max(1.5rem, env(safe-area-inset-top)); }
+  }
+  /* Safari can't do the url(#...) SVG-filter distortion in backdrop-filter
+     at all - it silently drops the whole declaration, so glass surfaces
+     render with zero blur. Swap in a plain blur+saturate there only. */
+  html.is-safari [data-app-nav] div[style*="glass-filter"]{
+    backdrop-filter: blur(14px) saturate(160%) !important;
+    -webkit-backdrop-filter: blur(14px) saturate(160%) !important;
+  }
+  html.is-safari .specimen{
+    backdrop-filter: blur(3px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(3px) saturate(180%) !important;
+  }
+  html.is-safari .tag-chip{
+    backdrop-filter: blur(3px) saturate(160%) !important;
+    -webkit-backdrop-filter: blur(3px) saturate(160%) !important;
+  }
+  html.is-safari .photo-cta{
+    backdrop-filter: blur(12px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(12px) saturate(180%) !important;
+  }
+  html.is-safari .photo-panel.expanded{
+    backdrop-filter: blur(12px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(12px) saturate(180%) !important;
+  }
+  html.is-safari .photo-card{
+    backdrop-filter: blur(10px) saturate(160%) !important;
+    -webkit-backdrop-filter: blur(10px) saturate(160%) !important;
+  }
+  html.is-safari .photo-subnav-inner{
+    backdrop-filter: blur(12px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(12px) saturate(180%) !important;
   }
   @media (min-width: 768px) {
     .specimen-grid.rail-mode {

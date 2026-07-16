@@ -6,11 +6,21 @@
   const colors = ['#8A9A5B', '#C1502E', '#D6A24C', '#4C8C86']; // moss, rust, amber, teal
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+  // Low-power tier: weak RAM/cores or a coarse (touch) pointer, where mouse-grab
+  // lines are moot anyway. Used only to cap cost, never to change the desktop look.
+  const LOW_POWER = (navigator.deviceMemory && navigator.deviceMemory <= 4)
+    || (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4)
+    || window.matchMedia('(pointer: coarse)').matches;
+  const MAX_DPR = LOW_POWER ? 1 : 2;
+  const DENSITY_DIVISOR = LOW_POWER ? 24000 : 16000; // fewer particles/px^2 on weak devices
+  const MAX_PARTICLES = LOW_POWER ? 55 : 90;
+
   let w, h, dpr, particles = [];
   const mouse = { x: null, y: null };
   const LINK_DIST = 140;
   const GRAB_DIST = 160;
   let lastW = 0, lastH = 0;
+  let paused = false;
 
   // iOS/Android Safari fire 'resize' repeatedly while the address bar
   // slides away during the first scroll (innerHeight keeps changing).
@@ -21,7 +31,7 @@
     const heightChanged = innerHeight !== lastH;
     if (!force && !widthChanged && !heightChanged) return;
 
-    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    dpr = Math.min(window.devicePixelRatio || 1, MAX_DPR);
     w = canvas.width = innerWidth * dpr;
     h = canvas.height = innerHeight * dpr;
     canvas.style.width = innerWidth + 'px';
@@ -33,7 +43,7 @@
   }
 
   function rebuildParticles() {
-    const count = Math.min(90, Math.floor((innerWidth * innerHeight) / 16000));
+    const count = Math.min(MAX_PARTICLES, Math.floor((innerWidth * innerHeight) / DENSITY_DIVISOR));
     particles = Array.from({ length: count }, () => ({
       x: Math.random() * w,
       y: Math.random() * h,
@@ -43,7 +53,7 @@
       color: colors[Math.floor(Math.random() * colors.length)]
     }));
     // extra cluster near the top-center, around the nav pill, so the glass distortion has more dots to refract
-    const topBandCount = 25;
+    const topBandCount = LOW_POWER ? 15 : 25;
     const topBandHeight = 140 * dpr;
     const centerBandWidth = w * 0.32;
     const centerBandStart = (w - centerBandWidth) / 2;
@@ -72,38 +82,55 @@
       ctx.fill();
     }
     ctx.globalAlpha = 1;
+    const linkDistPx = LINK_DIST * dpr, linkDistSq = linkDistPx * linkDistPx;
+    const grabDistPx = GRAB_DIST * dpr, grabDistSq = grabDistPx * grabDistPx;
     for (let i = 0; i < particles.length; i++) {
       for (let j = i + 1; j < particles.length; j++) {
         const a = particles[i], b = particles[j];
         const dx = a.x - b.x, dy = a.y - b.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < LINK_DIST * dpr) {
+        const distSq = dx * dx + dy * dy;
+        // Cheap squared-distance reject first; sqrt only runs for pairs that are
+        // actually going to be drawn (the vast majority of n^2 pairs aren't).
+        if (distSq < linkDistSq) {
+          const dist = Math.sqrt(distSq);
           ctx.beginPath();
           ctx.moveTo(a.x, a.y);
           ctx.lineTo(b.x, b.y);
-          ctx.strokeStyle = 'rgba(180,180,170,' + (1 - dist / (LINK_DIST * dpr)) * .4 + ')';
+          ctx.strokeStyle = 'rgba(180,180,170,' + (1 - dist / linkDistPx) * .4 + ')';
           ctx.lineWidth = 1;
           ctx.stroke();
         }
       }
       if (mouse.x != null) {
         const dx = particles[i].x - mouse.x, dy = particles[i].y - mouse.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < GRAB_DIST * dpr) {
+        const distSq = dx * dx + dy * dy;
+        if (distSq < grabDistSq) {
+          const dist = Math.sqrt(distSq);
           ctx.beginPath();
           ctx.moveTo(particles[i].x, particles[i].y);
           ctx.lineTo(mouse.x, mouse.y);
-          ctx.strokeStyle = 'rgba(140,180,255,' + (1 - dist / (GRAB_DIST * dpr)) * .8 + ')';
+          ctx.strokeStyle = 'rgba(140,180,255,' + (1 - dist / grabDistPx) * .8 + ')';
           ctx.lineWidth = 1;
           ctx.stroke();
         }
       }
     }
-    if (!reduceMotion) requestAnimationFrame(step);
+    if (!reduceMotion && !paused) requestAnimationFrame(step);
   }
 
-  window.addEventListener('resize', () => resize(false));
-  window.addEventListener('mousemove', e => { mouse.x = e.clientX * dpr; mouse.y = e.clientY * dpr; });
+  // Stop the rAF loop entirely while the tab/app is backgrounded - a canvas
+  // nobody can see was previously still repainting ~60x/sec on every device.
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      paused = true;
+    } else if (paused) {
+      paused = false;
+      if (!reduceMotion) requestAnimationFrame(step);
+    }
+  });
+
+  window.addEventListener('resize', () => resize(false), { passive: true });
+  window.addEventListener('mousemove', e => { mouse.x = e.clientX * dpr; mouse.y = e.clientY * dpr; }, { passive: true });
   window.addEventListener('mouseleave', () => { mouse.x = null; mouse.y = null; });
 
   resize(true);
@@ -121,16 +148,25 @@
   tick(); setInterval(tick, 1000*30);
 (function(){
   if (typeof gsap === 'undefined') return;
-  gsap.registerPlugin(ScrollTrigger);
+  gsap.registerPlugin(ScrollTrigger, MotionPathPlugin);
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const LOW_POWER = (navigator.deviceMemory && navigator.deviceMemory <= 4)
+    || (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4)
+    || window.matchMedia('(pointer: coarse)').matches;
+  if (LOW_POWER) document.body.classList.add('low-power');
 
   /* 1. Smooth scroll base (Lenis + GSAP ticker) */
   let lenis;
   if (!reduceMotion && typeof Lenis !== 'undefined'){
     lenis = new Lenis({ duration: 1.05, smoothWheel: true });
     lenis.on('scroll', ScrollTrigger.update);
-    gsap.ticker.add((time)=>{ lenis.raf(time * 1000); });
+    const lenisTick = (time)=>{ lenis.raf(time * 1000); };
+    gsap.ticker.add(lenisTick);
     gsap.ticker.lagSmoothing(0);
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) gsap.ticker.remove(lenisTick);
+      else gsap.ticker.add(lenisTick);
+    });
   }
 
   /* 14. SplitText Helper (Feature 4) */
@@ -497,12 +533,20 @@
   const navLinks = { projects: document.querySelector('[data-nav="projects"]'), experience: document.querySelector('[data-nav="experience"]') };
   const indicator = document.querySelector('.nav-indicator');
   let activeNavLink = null;
+  function syncIndicatorToActive(){
+    if (activeNavLink) gsap.set(indicator, { x: activeNavLink.offsetLeft, width: activeNavLink.offsetWidth });
+  }
   function moveIndicator(link){
     if (!link || !indicator) return;
     activeNavLink = link;
     gsap.to(indicator, {
       opacity:1, x: link.offsetLeft, width: link.offsetWidth,
-      duration:.35, ease:'power2.out', overwrite:'auto'
+      duration:.35, ease:'power2.out', overwrite:'auto',
+      // The nav's own width/x can still be mid-animation (wordmark morph, rail
+      // pin reflow) when this tween starts, so the offsetLeft/width captured
+      // above can be stale by the time it lands. Re-measure once more on
+      // completion so the pill never parks on a boundary calculated too early.
+      onComplete: syncIndicatorToActive
     });
     Object.values(navLinks).forEach(a=> a && a.classList.remove('active'));
     link.classList.add('active');
@@ -537,9 +581,12 @@
   });
   // Keep the pill glued to its link while the nav's own width is still animating
   // (e.g. right after a resize, or while other layout-affecting tweens run).
-  ScrollTrigger.addEventListener('refresh', () => {
-    if (activeNavLink) gsap.set(indicator, { x: activeNavLink.offsetLeft, width: activeNavLink.offsetWidth });
-  });
+  ScrollTrigger.addEventListener('refresh', syncIndicatorToActive);
+  let navResizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(navResizeTimer);
+    navResizeTimer = setTimeout(syncIndicatorToActive, 150);
+  }, { passive: true });
   
   // 13. Custom Cursor (Feature 3)
   const isTouch = window.matchMedia('(pointer: coarse)').matches;
@@ -606,7 +653,7 @@
       const cx = rect.left + rect.width / 2;
       const cy = rect.top + rect.height / 2;
       const bits = [];
-      const PARTICLE_COUNT = 40;
+      const PARTICLE_COUNT = LOW_POWER ? 24 : 40;
 
       for (let i = 0; i < PARTICLE_COUNT; i++) {
         const bit = document.createElement('span');
@@ -620,20 +667,39 @@
 
       gsap.set(letter, { opacity: 0 });
       bits.forEach(bit => {
-        const angle = Math.random() * Math.PI * 2;
-        const dist = 18 + Math.random() * 26;
+        // Physics2D drives x/y itself from velocity+angle+gravity+friction, so the
+        // path is a genuine ballistic arc (curved) rather than a straight lerp to
+        // a fixed endpoint - gravity pulls it down, friction (drag) bleeds speed.
+        const angle = -90 + (Math.random() - 0.5) * 150; // upward-biased cone
+        const velocity = 90 + Math.random() * 90;
+        const gravity = 380, friction = 0.15;
+        const rad = angle * Math.PI / 180;
+        let vx = Math.cos(rad) * velocity;
+        let vy = Math.sin(rad) * velocity;
+        let px = 0, py = 0;
+        // Hand-rolled ballistic arc: same math Physics2DPlugin does internally
+        // (velocity/angle decomposed into vx/vy, gravity pulls vy down each
+        // frame, friction bleeds speed off both axes) - just driven from
+        // onUpdate instead of the plugin, so no external script is required.
         gsap.to(bit, {
-          x: Math.cos(angle) * dist,
-          y: Math.sin(angle) * dist,
           scale: 0,
           opacity: 0,
           duration: 1.0 + Math.random() * 0.5,
-          ease: 'power2.out'
+          ease: 'power1.out',
+          onUpdate: function () {
+            const dt = gsap.ticker.deltaRatio(60) / 60;
+            vy += gravity * dt;
+            vx *= (1 - friction * dt);
+            vy *= (1 - friction * dt);
+            px += vx * dt;
+            py += vy * dt;
+            gsap.set(bit, { x: px, y: py });
+          }
         });
       });
 
       gsap.to(letter, {
-        opacity: 1, delay: 1.5, duration: 0.4, ease: 'power2.out',
+        opacity: 1, delay: 0.5, duration: 0.4, ease: 'power2.out',
         onStart: () => gsap.fromTo(letter, { scale: 0.4, y: -6 }, { scale: 1, y: 0, duration: 0.4, ease: 'back.out(2)' }),
         onComplete: () => { bits.forEach(b => b.remove()); busy = false; }
       });
@@ -671,7 +737,7 @@
       const color = getComputedStyle(surname).color;
       const cy = rect.top + rect.height / 2;
       const bits = [];
-      const PARTICLE_COUNT = 40;
+      const PARTICLE_COUNT = LOW_POWER ? 24 : 40;
 
       for (let i = 0; i < PARTICLE_COUNT; i++) {
         const bit = document.createElement('span');
@@ -685,15 +751,27 @@
 
       gsap.set(surname, { opacity: 0 });
       bits.forEach(bit => {
-        const angle = Math.random() * Math.PI * 2;
-        const dist = 20 + Math.random() * 34;
+        const angle = -90 + (Math.random() - 0.5) * 180;
+        const velocity = 60 + Math.random() * 70;
+        const gravity = 260, friction = 0.1;
+        const rad = angle * Math.PI / 180;
+        let vx = Math.cos(rad) * velocity;
+        let vy = Math.sin(rad) * velocity;
+        let px = 0, py = 0;
         gsap.to(bit, {
-          x: Math.cos(angle) * dist,
-          y: Math.sin(angle) * dist,
           scale: 0,
           opacity: 0,
-          duration: 3.5+ Math.random() * 0.5,
-          ease: 'power2.out'
+          duration: 3.5 + Math.random() * 0.5,
+          ease: 'power1.out',
+          onUpdate: function () {
+            const dt = gsap.ticker.deltaRatio(60) / 60;
+            vy += gravity * dt;
+            vx *= (1 - friction * dt);
+            vy *= (1 - friction * dt);
+            px += vx * dt;
+            py += vy * dt;
+            gsap.set(bit, { x: px, y: py });
+          }
         });
       });
 

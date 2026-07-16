@@ -244,6 +244,31 @@
     backdrop-filter: blur(12px) saturate(180%) !important;
     -webkit-backdrop-filter: blur(12px) saturate(180%) !important;
   }
+
+  /* Low-power tier (body.low-power, set by mainscript.js from deviceMemory/
+     hardwareConcurrency/coarse-pointer): the per-pixel SVG feDisplacementMap
+     distortion behind these glass surfaces is the single most expensive paint
+     op on the page on a weak GPU. Swap it for plain blur+saturate, same as the
+     existing Safari fallback - visually very close, costs a fraction as much.
+     Capable devices never get this class, so nothing changes for them. */
+  body.low-power [data-app-nav] div[style*="glass-filter"]{
+    backdrop-filter: blur(14px) saturate(160%) !important;
+    -webkit-backdrop-filter: blur(14px) saturate(160%) !important;
+  }
+  body.low-power .specimen{
+    backdrop-filter: blur(3px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(3px) saturate(180%) !important;
+  }
+  body.low-power .photo-cta,
+  body.low-power .photo-panel.expanded,
+  body.low-power .photo-subnav-inner{
+    backdrop-filter: blur(10px) saturate(170%) !important;
+    -webkit-backdrop-filter: blur(10px) saturate(170%) !important;
+  }
+  body.low-power .photo-card{
+    backdrop-filter: blur(8px) saturate(150%) !important;
+    -webkit-backdrop-filter: blur(8px) saturate(150%) !important;
+  }
   @media (min-width: 768px) {
     .specimen-grid.rail-mode {
       display: flex;

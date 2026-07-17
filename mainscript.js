@@ -488,20 +488,38 @@ tick(); setInterval(tick, 1000*30);
     });
   }
 
-  /* Lightbox: click a photo card to open its full-res version. */
+  /* Lightbox: click a photo card to open its full-res version (or play its
+     video, for the one storms card backed by an actual .mp4 clip). */
   const lightbox = document.getElementById('photoLightbox');
   const lightboxImg = document.getElementById('photoLightboxImg');
+  const lightboxVideo = document.getElementById('photoLightboxVideo');
   const lightboxClose = document.getElementById('photoLightboxClose');
   if (photoGrid && lightbox && lightboxImg) {
     photoGrid.addEventListener('click', (e) => {
       const card = e.target.closest('.photo-card');
       if (!card) return;
       const img = card.querySelector('img');
-      lightboxImg.src = img.dataset.full || img.src;
-      lightboxImg.alt = img.alt;
+      if (img.dataset.video) {
+        lightboxImg.style.display = 'none';
+        lightboxVideo.style.display = '';
+        lightboxVideo.src = img.dataset.video;
+        lightboxVideo.play();
+      } else {
+        lightboxVideo.pause();
+        lightboxVideo.style.display = 'none';
+        lightboxVideo.src = '';
+        lightboxImg.style.display = '';
+        lightboxImg.src = img.dataset.full || img.src;
+        lightboxImg.alt = img.alt;
+      }
       lightbox.classList.add('visible');
     });
-    const closeLightbox = () => { lightbox.classList.remove('visible'); lightboxImg.src = ''; };
+    const closeLightbox = () => {
+      lightbox.classList.remove('visible');
+      lightboxImg.src = '';
+      lightboxVideo.pause();
+      lightboxVideo.src = '';
+    };
     lightboxClose.addEventListener('click', closeLightbox);
     lightbox.addEventListener('click', (e) => { if (e.target === lightbox) closeLightbox(); });
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeLightbox(); });

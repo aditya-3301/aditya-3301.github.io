@@ -416,7 +416,7 @@
     opacity:0; pointer-events:none; transition:opacity .3s ease;
   }
   .photo-lightbox.visible{ opacity:1; pointer-events:auto; }
-  .photo-lightbox img{
+  .photo-lightbox img, .photo-lightbox video{
     max-width:100%; max-height:100%; border-radius:8px;
     box-shadow:0 20px 60px rgba(0,0,0,0.5);
   }

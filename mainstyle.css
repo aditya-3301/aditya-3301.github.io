@@ -461,3 +461,118 @@
     border: 1.5px solid var(--moss); transform: translate(-50%, -50%) scale(0);
     opacity: 0;
   }
+
+  /* ============================================================
+     Visual enhancement pass (branch: visual-enhancements).
+     Additive polish only - background layers (particle canvas,
+     .bg-image) are deliberately untouched.
+     ============================================================ */
+
+  /* -- Hero name: layered moss glow, per-letter colored glow on hover -- */
+  .hero h1 .letters{
+    text-shadow: 0 0 24px rgba(138,154,91,0.25), 0 0 64px rgba(138,154,91,0.12);
+  }
+  .hero h1 em{ text-shadow: 0 0 22px rgba(138,154,91,0.35); }
+  .letters .letter:hover{
+    text-shadow: 0 0 16px var(--hc), 0 0 42px var(--hc);
+  }
+
+  /* -- Specimen cards: rotating conic-gradient border on hover.
+        @property lets the angle interpolate; browsers without it just
+        show the gradient static, which still reads fine. -- */
+  @property --spec-angle{
+    syntax: '<angle>'; initial-value: 0deg; inherits: false;
+  }
+  @keyframes spec-border-spin{ to{ --spec-angle: 360deg; } }
+  .specimen::before{
+    content:""; position:absolute; inset:0; border-radius:inherit;
+    padding:1.5px; pointer-events:none; z-index:1;
+    background: conic-gradient(from var(--spec-angle),
+      transparent 0%, rgba(138,154,91,0.55) 25%, rgba(200,151,62,0.5) 45%,
+      rgba(76,140,134,0.45) 65%, transparent 85%);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+            mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            mask-composite: exclude;
+    opacity:0; transition:opacity .35s ease;
+  }
+  .specimen:hover::before{
+    opacity:1; animation: spec-border-spin 3.2s linear infinite;
+  }
+
+  /* -- Specimen cards: cursor-follow spotlight (uses the --x/--y vars
+        mainscript.js already writes on mousemove) -- */
+  .specimen::after{
+    content:""; position:absolute; inset:0; border-radius:inherit;
+    pointer-events:none; z-index:1;
+    background: radial-gradient(320px circle at var(--x,50%) var(--y,50%),
+      rgba(138,154,91,0.14), rgba(255,255,255,0.05) 38%, transparent 68%);
+    opacity:0; transition:opacity .3s ease;
+  }
+  .specimen:hover::after{ opacity:1; }
+
+  /* -- Nav pill: ambient moss glow behind the glass (needs !important to
+        beat the inline box-shadow on the pill div) -- */
+  [data-app-nav] div[style*="glass-filter"]{
+    box-shadow: rgba(255,255,255,0.1) 0px 0px 0px 0.5px inset,
+                rgba(0,0,0,0.1) 0px 4px 16px,
+                rgba(0,0,0,0.08) 0px 8px 24px,
+                0 0 30px rgba(138,154,91,0.16) !important;
+  }
+  .nav-indicator{
+    box-shadow: 0 0 16px rgba(138,154,91,0.55), 0 0 4px rgba(138,154,91,0.35);
+  }
+
+  /* -- Field log: per-entry accent colors + soft glow (track is duplicated
+        by JS for looping, so nth-child keeps cycling seamlessly) -- */
+  .fieldlog-track span:nth-child(4n+1) b{ color:var(--moss);  text-shadow:0 0 12px rgba(138,154,91,0.4); }
+  .fieldlog-track span:nth-child(4n+2) b{ color:var(--amber); text-shadow:0 0 12px rgba(200,151,62,0.4); }
+  .fieldlog-track span:nth-child(4n+3) b{ color:var(--teal);  text-shadow:0 0 12px rgba(76,140,134,0.45); }
+  .fieldlog-track span:nth-child(4n)   b{ color:var(--clay);  text-shadow:0 0 12px rgba(181,101,74,0.4); }
+
+  /* -- Section headings: gradient underline draws in with the reveal
+        (mainscript.js adds .head-inview in the existing onEnter) -- */
+  .section-head h2{ position:relative; padding-bottom:8px; }
+  .section-head h2::after{
+    content:""; position:absolute; left:0; bottom:0; height:2px; width:100%;
+    border-radius:2px;
+    background:linear-gradient(90deg, var(--rust), var(--amber), var(--moss), transparent);
+    transform:scaleX(0); transform-origin:left center;
+    transition:transform .9s cubic-bezier(.2,.8,.2,1) .2s;
+  }
+  .section-head.head-inview h2::after{ transform:scaleX(1); }
+
+  /* -- Tag chips + photo CTA: moss glow joins the lift on hover -- */
+  .tag-chip:hover{
+    box-shadow: rgba(255,255,255,0.12) 0px 0px 0px 0.5px inset,
+                rgba(0,0,0,0.18) 0px 6px 20px,
+                0 0 18px rgba(138,154,91,0.22);
+  }
+  .photo-cta:hover{
+    box-shadow: rgba(255,255,255,0.13) 0px 0px 0px 0.5px inset,
+                rgba(0,0,0,0.18) 0px 6px 20px,
+                0 0 22px rgba(138,154,91,0.25);
+  }
+
+  /* -- Photo grid: simple hover lift only -- */
+  .photo-card{
+    transition: transform .3s ease, box-shadow .3s ease;
+  }
+  @media (hover:hover) and (pointer:fine){
+    .photo-card:hover{
+      transform: translateY(-4px) scale(1.02); z-index:2;
+      box-shadow: 0 14px 34px rgba(0,0,0,0.45), 0 0 0 1px rgba(138,154,91,0.35);
+    }
+  }
+
+  /* -- Lightbox: media eases up into place instead of popping -- */
+  .photo-lightbox img, .photo-lightbox video{
+    transform: scale(.92) translateY(12px);
+    transition: transform .35s cubic-bezier(.2,.8,.2,1);
+  }
+  .photo-lightbox.visible img, .photo-lightbox.visible video{
+    transform: scale(1) translateY(0);
+  }
+
+  /* -- Footer mark: tiny signature glow -- */
+  .footer-mark{ text-shadow:0 0 12px rgba(138,154,91,0.4); }

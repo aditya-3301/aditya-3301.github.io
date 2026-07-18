@@ -292,6 +292,8 @@ tick(); setInterval(tick, 1000*30);
         trigger: head, 
         start:'top 85%',
         onEnter: () => {
+          // Kicks off the CSS gradient-underline draw (.section-head h2::after)
+          head.classList.add('head-inview');
           textEls.forEach(el => {
             const originalText = el.dataset.text;
             const length = originalText.length;
@@ -406,8 +408,9 @@ tick(); setInterval(tick, 1000*30);
 
       // Magnetic tilt + CSS cursor-follow spotlight on each card (desktop and mobile)
       const xTo = gsap.quickTo(card, "rotationY", {duration: 0.4, ease: "power3"}),
-            yTo = gsap.quickTo(card, "rotationX", {duration: 0.4, ease: "power3"});
-      
+            yTo = gsap.quickTo(card, "rotationX", {duration: 0.4, ease: "power3"}),
+            zTo = gsap.quickTo(card, "rotationZ", {duration: 0.5, ease: "power3"});
+
       const mouseMove = (e) => {
         const rect = card.getBoundingClientRect();
         const x = e.clientX - rect.left;
@@ -418,8 +421,11 @@ tick(); setInterval(tick, 1000*30);
         const ry = (y / rect.height) - 0.5;
         xTo(rx * 28);
         yTo(-ry * 28);
+        // Slight twist keyed to the horizontal offset - keeps the tilt from
+        // feeling like a flat gimbal. Small on purpose (max ~2.5deg).
+        zTo(rx * 2.5);
       };
-      const mouseLeave = () => { xTo(0); yTo(0); };
+      const mouseLeave = () => { xTo(0); yTo(0); zTo(0); };
       
       card.addEventListener("mousemove", mouseMove);
       card.addEventListener("mouseleave", mouseLeave);
@@ -464,6 +470,15 @@ tick(); setInterval(tick, 1000*30);
       photoGrid.querySelectorAll('.photo-card').forEach(card => {
         card.classList.toggle('hidden-cat', cat !== 'all' && card.dataset.cat !== cat);
       });
+      // Soft re-entry for the cards that survive the filter - masks the
+      // instant reflow from display:none toggling with a quick stagger.
+      if (!reduceMotion) {
+        gsap.fromTo(photoGrid.querySelectorAll('.photo-card:not(.hidden-cat)'),
+          { opacity: 0, y: 14, scale: .97 },
+          { opacity: 1, y: 0, scale: 1, duration: .35, ease: 'power2.out',
+            stagger: .03, overwrite: 'auto', clearProps: 'opacity,transform' }
+        );
+      }
     });
   }
 

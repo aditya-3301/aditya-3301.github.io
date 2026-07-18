@@ -43,6 +43,57 @@
   }
   ::selection{ background:var(--rust); color:var(--bg); }
 
+  /* --------------------------------------------------------------
+     Minimal utility classes replacing the Tailwind CDN (issue #17).
+     Only the utilities actually used by the nav markup in index.html;
+     values match Tailwind's defaults so the markup needed no changes.
+     -------------------------------------------------------------- */
+  .fixed{position:fixed}
+  .relative{position:relative}
+  .absolute{position:absolute}
+  .inset-0{inset:0}
+  .top-6{top:24px}
+  .bottom-4{bottom:16px}
+  .left-0{left:0}
+  .right-0{right:0}
+  .z-\[25\]{z-index:25}
+  .z-10{z-index:10}
+  .-z-10{z-index:-10}
+  .flex{display:flex}
+  .hidden{display:none}
+  .items-center{align-items:center}
+  .justify-center{justify-content:center}
+  .overflow-hidden{overflow:hidden}
+  .pointer-events-none{pointer-events:none}
+  .gap-1{gap:4px}
+  .p-1{padding:4px}
+  .px-1{padding-left:4px;padding-right:4px}
+  .py-1{padding-top:4px;padding-bottom:4px}
+  .px-2{padding-left:8px;padding-right:8px}
+  .px-3{padding-left:12px;padding-right:12px}
+  .px-4{padding-left:16px;padding-right:16px}
+  .py-1\.5{padding-top:6px;padding-bottom:6px}
+  .mr-1{margin-right:4px}
+  .w-full{width:100%}
+  .h-full{height:100%}
+  .opacity-0{opacity:0}
+  .rounded-\[inherit\]{border-radius:inherit}
+  .text-\[13px\]{font-size:13px}
+  .font-medium{font-weight:500}
+  .text-white{color:#fff}
+  .text-white\/70{color:rgba(255,255,255,0.7)}
+  .hover\:text-white:hover{color:#fff}
+  .transition-colors{transition:color .2s ease}
+  .transition-opacity{transition:opacity .26s ease-out}
+  .duration-\[260ms\]{transition-duration:260ms}
+  .ease-out{transition-timing-function:ease-out}
+  @media (min-width:768px){
+    .md\:block{display:block}
+    .md\:hidden{display:none}
+  }
+  /* Notch/Dynamic-Island safety at every width, not just mobile (issue #5) */
+  [data-app-nav]{ top: max(1.5rem, env(safe-area-inset-top)); }
+
   /* header */
   header{
     display:flex; justify-content:space-between; align-items:center;
@@ -202,12 +253,16 @@
 
   .bg-image{
     position:fixed; inset:0; z-index:-2; pointer-events:none;
-    background-image:url('image.jpg');
+    background-image:url('media/backgrounds/home.jpg');
     background-size:cover;
     background-position:50% 50%;
     transform: translateZ(0);
     backface-visibility: hidden;
   }
+  /* Low-power devices (see LOW_POWER detection in mainscript.js, which sets
+     body.low-power) get the small compressed webp instead of the 424KB
+     full-res original - everyone else gets full res. */
+  body.low-power .bg-image{ background-image:url('media/backgrounds/home-compressed.webp'); }
 
   .specimen-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(280px,1fr)); gap:18px; background:transparent; border:none; perspective: 1000px; }
   @media (max-width: 767px) {

@@ -74,14 +74,21 @@
   }
   .photo-card img{ opacity:1 !important; }
   .photo-card:hover img{ opacity:1 !important; }
-  /* Bg-image override */
-  .bg-image{
+  /* Bg-image override. Bumped to body .bg-image / body.low-power .bg-image
+     so it beats mainstyle.css's body.low-power .bg-image rule on specificity
+     - mainscript.js adds body.low-power based on deviceMemory/hardwareConcurrency/
+     coarse-pointer checks, which privacy-hardened browsers (Brave, Tor) tend to
+     spoof into tripping true, so a plain .bg-image override was losing to it
+     and showing home.jpg/home-compressed.webp instead of the gallery bg. */
+  body .bg-image,
+  body.low-power .bg-image{
     background-image:url('media/backgrounds/gallery.png');
   }
   /* Same low-power tiering as index.html, but gallery.html detects it inline
      in <head> (html.is-lowpower, see script above) to avoid a flash of the
      full-res image before mainscript.js runs. */
-  html.is-lowpower .bg-image{ background-image:url('media/backgrounds/gallery-compressed.webp'); }
+  html.is-lowpower .bg-image,
+  html.is-lowpower body.low-power .bg-image{ background-image:url('media/backgrounds/gallery-compressed.webp'); }
   /* Collapsible image description panel, shown only inside the lightbox.
      Near-transparent so it sits quietly over/under the full-res photo. */
   .photo-lightbox-desc{

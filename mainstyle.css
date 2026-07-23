@@ -43,6 +43,23 @@
   }
   ::selection{ background:var(--rust); color:var(--bg); }
 
+  /* --- Dolly-zoom page transition (index -> gallery) ---
+     .dolly-portal is the "world behind the screen" the camera pushes into;
+     it sits above everything but the custom cursor. Hidden by default so it
+     costs nothing on pages/visits that never trigger the transition. */
+  html.dolly-active, html.dolly-active body{ overflow:hidden; cursor:wait; }
+  .dolly-portal{
+    display:none; position:fixed; inset:0; z-index:9990;
+    align-items:center; justify-content:center; pointer-events:none;
+    background:
+      radial-gradient(ellipse at center, rgba(20,18,15,0) 0%, rgba(11,10,9,0.94) 68%, #0b0a09 100%);
+  }
+  .dolly-portal-label{
+    font-family:'Newsreader', serif; font-weight:500; font-style:italic;
+    font-size:clamp(1.6rem,3vw,2.4rem); letter-spacing:0.02em; color:var(--ink);
+    opacity:0;
+  }
+
   /* --------------------------------------------------------------
      Minimal utility classes replacing the Tailwind CDN (issue #17).
      Only the utilities actually used by the nav markup in index.html;

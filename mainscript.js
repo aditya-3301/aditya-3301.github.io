@@ -539,7 +539,7 @@ tick(); setInterval(tick, 1000*30);
   }
 
   /* Top nav scrollspy indicator: highlights the active section link */
-  const navLinks = { projects: document.querySelector('[data-nav="projects"]'), experience: document.querySelector('[data-nav="experience"]') };
+  const navLinks = { photography: document.querySelector('[data-nav="photography"]'), projects: document.querySelector('[data-nav="projects"]'), experience: document.querySelector('[data-nav="experience"]') };
   const indicator = document.querySelector('.nav-indicator');
   let activeNavLink = null;
   function syncIndicatorToActive(){
@@ -571,24 +571,31 @@ tick(); setInterval(tick, 1000*30);
   // (the wordmark morph above grows/shrinks the nav width while scrubbing), so
   // scrolling down then back up left the pill parked at a stale x/width, visibly
   // misaligned/overlapping the wrong link - exactly the reported glitch.
-  // Projects: highlight when its top crosses 40% down the viewport (unchanged).
-  // Experience: only highlight once its BOTTOM is nearing the viewport (60%) -
-  // i.e. most of the section has already scrolled past - rather than the
-  // moment its top appears, which was activating "About Me" far too early.
-  const scrollspyDefs = [
-    { id: 'projects',   start: 'top 40%',    end: 'bottom 40%', idx: 0 },
-    { id: 'experience', start: 'bottom 60%', end: 'bottom 40%', idx: 1 }
-  ];
-  scrollspyDefs.forEach(({ id, start, end, idx }) => {
-    const section = document.getElementById(id);
-    if (!section) return;
-    ScrollTrigger.create({
-      trigger: section, start, end,
-      onEnter: ()=> moveIndicator(navLinks[id]),
-      onEnterBack: ()=> moveIndicator(navLinks[id]),
-      onLeaveBack: ()=> { if (idx === 0) hideIndicator(); }
+  // These triggers must NOT be created here - same trap as the bg-image/scroll-progress
+  // triggers below: the projects rail's pin hasn't been added to the document yet at
+  // this point in the script, so ScrollTrigger measures the shorter pre-rail page and
+  // every start/end percentage lands compressed - which is why "About Me" (and, as a
+  // knock-on effect, "Photography" right after it) was firing while still in Projects.
+  // Creation is deferred into createFullPageScrollTriggers(), called only once the rail
+  // pin exists.
+  function createNavScrollspyTriggers(){
+    const scrollspyDefs = [
+      { id: 'projects',    start: 'top 40%',    end: 'bottom 40%', idx: 0 },
+      { id: 'experience',  start: 'top 40%',    end: 'bottom 40%', idx: 1 },
+      { sel: '.photo-cta', start: 'top 50%',    end: 'bottom top', idx: 2 }
+    ];
+    scrollspyDefs.forEach(({ id, sel, start, end, idx }) => {
+      const section = sel ? document.querySelector(sel) : document.getElementById(id);
+      if (!section) return;
+      const linkKey = id || 'photography';
+      ScrollTrigger.create({
+        trigger: section, start, end,
+        onEnter: ()=> moveIndicator(navLinks[linkKey]),
+        onEnterBack: ()=> moveIndicator(navLinks[linkKey]),
+        onLeaveBack: ()=> { if (idx === 0) hideIndicator(); }
+      });
     });
-  });
+  }
   // Keep the pill glued to its link while the nav's own width is still animating
   // (e.g. right after a resize, or while other layout-affecting tweens run).
   ScrollTrigger.addEventListener('refresh', syncIndicatorToActive);
@@ -870,6 +877,7 @@ tick(); setInterval(tick, 1000*30);
       scaleX: 1, ease: 'none',
       scrollTrigger: { trigger: 'body', start: 'top top', end: 'bottom bottom', scrub: 0.3 }
     });
+    createNavScrollspyTriggers();
   }
 
   if (document.fonts && document.fonts.ready) {

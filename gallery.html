@@ -16,6 +16,14 @@
     if (coarse && (lowCores || lowMem || smallScreen)) {
       document.documentElement.classList.add('is-lowpower');
     }
+    // Arriving from the index-page dolly transition? Flag it before paint
+    // so the CSS below can render the portal already covering the screen -
+    // otherwise there'd be one bare frame of gallery before mainscript.js
+    // gets a chance to hide it.
+    if (sessionStorage.getItem('pt-arrive') === '1') {
+      sessionStorage.removeItem('pt-arrive');
+      document.documentElement.classList.add('pt-arriving');
+    }
   })();
 </script>
 <title>Photography — Aditya Shankar</title>
@@ -74,6 +82,14 @@
   }
   .photo-card img{ opacity:1 !important; }
   .photo-card:hover img{ opacity:1 !important; }
+  /* Holds the portal fully covering the screen from first paint until
+     mainscript.js's arrival timeline takes over and eases it away -
+     without this there'd be a flash of bare gallery before JS runs. */
+  html.pt-arriving #dollyPortal{ display:flex; opacity:1; }
+  html.pt-arriving .gallery-nav,
+  html.pt-arriving .gallery-page-head,
+  html.pt-arriving .photo-grid,
+  html.pt-arriving .bg-image{ opacity:0; }
   /* Bg-image override. Bumped to body .bg-image / body.low-power .bg-image
      so it beats mainstyle.css's body.low-power .bg-image rule on specificity
      - mainscript.js adds body.low-power based on deviceMemory/hardwareConcurrency/
@@ -153,6 +169,7 @@
   <div class="cursor-dot"></div>
   <div class="cursor-ring"></div>
 
+  <div class="dolly-portal" id="dollyPortal"><span class="dolly-portal-label">Photography</span></div>
   <canvas id="particle-bg" style="position:fixed; inset:0; z-index:-1; pointer-events:none;"></canvas>
   <div class="bg-image"></div>
   <!-- mainscript.js's clock tick() expects this element (normally in index.html's

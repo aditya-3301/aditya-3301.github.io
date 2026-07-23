@@ -539,7 +539,7 @@ tick(); setInterval(tick, 1000*30);
   }
 
   /* Top nav scrollspy indicator: highlights the active section link */
-  const navLinks = { projects: document.querySelector('[data-nav="projects"]'), experience: document.querySelector('[data-nav="experience"]') };
+  const navLinks = { photography: document.querySelector('[data-nav="photography"]'), projects: document.querySelector('[data-nav="projects"]'), experience: document.querySelector('[data-nav="experience"]') };
   const indicator = document.querySelector('.nav-indicator');
   let activeNavLink = null;
   function syncIndicatorToActive(){
@@ -571,24 +571,31 @@ tick(); setInterval(tick, 1000*30);
   // (the wordmark morph above grows/shrinks the nav width while scrubbing), so
   // scrolling down then back up left the pill parked at a stale x/width, visibly
   // misaligned/overlapping the wrong link - exactly the reported glitch.
-  // Projects: highlight when its top crosses 40% down the viewport (unchanged).
-  // Experience: only highlight once its BOTTOM is nearing the viewport (60%) -
-  // i.e. most of the section has already scrolled past - rather than the
-  // moment its top appears, which was activating "About Me" far too early.
-  const scrollspyDefs = [
-    { id: 'projects',   start: 'top 40%',    end: 'bottom 40%', idx: 0 },
-    { id: 'experience', start: 'bottom 60%', end: 'bottom 40%', idx: 1 }
-  ];
-  scrollspyDefs.forEach(({ id, start, end, idx }) => {
-    const section = document.getElementById(id);
-    if (!section) return;
-    ScrollTrigger.create({
-      trigger: section, start, end,
-      onEnter: ()=> moveIndicator(navLinks[id]),
-      onEnterBack: ()=> moveIndicator(navLinks[id]),
-      onLeaveBack: ()=> { if (idx === 0) hideIndicator(); }
+  // These triggers must NOT be created here - same trap as the bg-image/scroll-progress
+  // triggers below: the projects rail's pin hasn't been added to the document yet at
+  // this point in the script, so ScrollTrigger measures the shorter pre-rail page and
+  // every start/end percentage lands compressed - which is why "About Me" (and, as a
+  // knock-on effect, "Photography" right after it) was firing while still in Projects.
+  // Creation is deferred into createFullPageScrollTriggers(), called only once the rail
+  // pin exists.
+  function createNavScrollspyTriggers(){
+    const scrollspyDefs = [
+      { id: 'projects',    start: 'top 40%',    end: 'bottom 40%', idx: 0 },
+      { id: 'experience',  start: 'top 40%',    end: 'bottom 40%', idx: 1 },
+      { sel: '.photo-cta', start: 'top 50%',    end: 'bottom top', idx: 2 }
+    ];
+    scrollspyDefs.forEach(({ id, sel, start, end, idx }) => {
+      const section = sel ? document.querySelector(sel) : document.getElementById(id);
+      if (!section) return;
+      const linkKey = id || 'photography';
+      ScrollTrigger.create({
+        trigger: section, start, end,
+        onEnter: ()=> moveIndicator(navLinks[linkKey]),
+        onEnterBack: ()=> moveIndicator(navLinks[linkKey]),
+        onLeaveBack: ()=> { if (idx === 0) hideIndicator(); }
+      });
     });
-  });
+  }
   // Keep the pill glued to its link while the nav's own width is still animating
   // (e.g. right after a resize, or while other layout-affecting tweens run).
   ScrollTrigger.addEventListener('refresh', syncIndicatorToActive);
@@ -870,6 +877,7 @@ tick(); setInterval(tick, 1000*30);
       scaleX: 1, ease: 'none',
       scrollTrigger: { trigger: 'body', start: 'top top', end: 'bottom bottom', scrub: 0.3 }
     });
+    createNavScrollspyTriggers();
   }
 
   if (document.fonts && document.fonts.ready) {
@@ -877,4 +885,307 @@ tick(); setInterval(tick, 1000*30);
   } else {
     window.addEventListener('load', () => { initProjectsRail(); createFullPageScrollTriggers(); });
   }
+})();
+
+/* ------------------------------------------------------------------------
+   Dolly-zoom page transition: index.html "View Photography" -> gallery.html
+
+   Concept: the camera pushes forward through whatever part of the page is
+   currently on screen, while a portal (the gallery, waiting behind the
+   glass) rushes in from depth to meet it. Only elements actually visible
+   in the viewport at click-time are animated, each with its own depth/
+   tilt proportional to its offset from viewport centre - so the push
+   reads as one continuous 3D camera move, not a canned page-wide effect.
+   Navigation happens once the portal fully covers the screen; gallery.html
+   picks the illusion back up on arrival (see the matching block at the
+   bottom of this file, gated on the pt-arriving flag it sets before nav).
+   ------------------------------------------------------------------------ */
+(() => {
+  const cta = document.querySelector('.photo-cta');
+  if (!cta || typeof gsap === 'undefined') return;
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Warm the destination the moment intent is likely, so the portal never
+  // has to wait on it once it covers the screen.
+  let prefetched = false;
+  function prefetchGallery(){
+    if (prefetched) return; prefetched = true;
+    const l = document.createElement('link');
+    l.rel = 'prefetch'; l.href = cta.getAttribute('href'); l.as = 'document';
+    document.head.appendChild(l);
+  }
+  cta.addEventListener('mouseenter', prefetchGallery, { once: true });
+  cta.addEventListener('touchstart', prefetchGallery, { once: true, passive: true });
+  cta.addEventListener('focus', prefetchGallery, { once: true });
+
+  const portal = document.createElement('div');
+  portal.className = 'dolly-portal';
+  portal.innerHTML = '<span class="dolly-portal-label">Photography</span>';
+  document.body.appendChild(portal);
+
+  const DOLLY_SELECTORS = 'nav[data-app-nav], header, .hero, .fieldlog, #projects, #experience, footer.site-footer, .bg-image, #particle-bg';
+
+  cta.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (document.documentElement.classList.contains('dolly-active')) return;
+    const href = cta.getAttribute('href');
+    prefetchGallery();
+
+    if (reduceMotion) {
+      sessionStorage.setItem('pt-arrive', '1');
+      window.location.href = href;
+      return;
+    }
+
+    document.documentElement.classList.add('dolly-active');
+    const vw = innerWidth, vh = innerHeight, cx = vw / 2, cy = vh / 2;
+
+    // Only the elements actually on screen right now take part - a scroll
+    // position showing just the Photography paragraph animates differently
+    // than one showing the full page, by design.
+    const targets = Array.from(document.querySelectorAll(DOLLY_SELECTORS)).filter(el => {
+      const r = el.getBoundingClientRect();
+      return r.bottom > 0 && r.top < vh && r.right > 0 && r.left < vw && r.width > 0 && r.height > 0;
+    });
+
+    gsap.set(targets, { filter: 'blur(0px) brightness(1)', transformOrigin: '50% 50%', transformPerspective: 1400 });
+
+    const tl = gsap.timeline({
+      defaults: { ease: 'power2.in' },
+      onComplete: () => {
+        sessionStorage.setItem('pt-arrive', '1');
+        window.location.href = href;
+      }
+    });
+
+    targets.forEach(el => {
+      const r = el.getBoundingClientRect();
+      // Offset from viewport centre, normalised -1..1: this is what turns a
+      // flat scale into a genuine forward push - elements near the centre
+      // (usually the CTA itself) barely move, peripheral ones sweep past
+      // faster, exactly like a real dolly shot.
+      const dx = (r.left + r.width / 2 - cx) / cx;
+      const dy = (r.top + r.height / 2 - cy) / cy;
+      const isCta = el.contains(cta) || el === cta;
+      tl.to(el, {
+        z: isCta ? 60 : 340 + Math.random() * 90,
+        x: `+=${dx * 120}`,
+        y: `+=${dy * 120}`,
+        rotationX: dy * -5,
+        rotationY: dx * 5,
+        scale: isCta ? 1.06 : 1.2,
+        filter: 'blur(9px) brightness(0.5)',
+        duration: 0.85,
+      }, 0);
+    });
+
+    // The CTA leads the push, staying sharp a beat longer than everything
+    // else, since it's the thing the eye is on when the click happens.
+    tl.to(cta, { z: 140, scale: 1.15, filter: 'blur(4px) brightness(0.85)', transformPerspective: 1400, duration: 0.55 }, 0.15);
+
+    tl.set(portal, { display: 'flex' }, 0)
+      .fromTo(portal, { opacity: 0, scale: 0.7 }, { opacity: 1, scale: 1, duration: 0.8, ease: 'power2.out' }, 0.2)
+      .fromTo(portal.querySelector('.dolly-portal-label'),
+        { opacity: 0, y: 16, scale: 0.94 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.45, ease: 'power2.out' }, 0.5);
+  });
+
+  // Bfcache guard: if the user hits Back from gallery.html, some browsers
+  // restore this page from bfcache exactly as it was frozen mid-transition
+  // (zoomed/blurred targets, cursor:wait, portal visible) without re-running
+  // any script. `pageshow` with event.persisted fires on that restore even
+  // though nothing else did, so this is the one place we can catch it and
+  // put the page back to a normal resting state.
+  window.addEventListener('pageshow', (e) => {
+    if (!e.persisted) return;
+    gsap.killTweensOf(DOLLY_SELECTORS);
+    gsap.killTweensOf(portal);
+    gsap.set(DOLLY_SELECTORS, { clearProps: 'all' });
+    gsap.set(portal, { display: 'none', opacity: 0, scale: 0.7 });
+    gsap.set(portal.querySelector('.dolly-portal-label'), { opacity: 0 });
+    document.documentElement.classList.remove('dolly-active');
+  });
+})();
+
+/* ------------------------------------------------------------------------
+   Dolly-zoom page transition, reverse leg: gallery.html "← Aditya" ->
+   index.html. Same push-through-the-screen concept as the forward shot
+   above, just aimed at the gallery's own on-screen elements, landing on
+   index.html (see the matching arrival block further down, gated on
+   pt-arriving-home).
+   ------------------------------------------------------------------------ */
+(() => {
+  const back = document.querySelector('.gallery-nav-back');
+  if (!back || typeof gsap === 'undefined') return;
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  let prefetched = false;
+  function prefetchHome(){
+    if (prefetched) return; prefetched = true;
+    const l = document.createElement('link');
+    l.rel = 'prefetch'; l.href = back.getAttribute('href'); l.as = 'document';
+    document.head.appendChild(l);
+  }
+  back.addEventListener('mouseenter', prefetchHome, { once: true });
+  back.addEventListener('touchstart', prefetchHome, { once: true, passive: true });
+  back.addEventListener('focus', prefetchHome, { once: true });
+
+  const portal = document.getElementById('dollyPortal');
+  if (portal) portal.querySelector('.dolly-portal-label').textContent = 'Aditya Shankar';
+
+  const DOLLY_SELECTORS_BACK = '.gallery-nav, .gallery-page-head, .photo-grid, .bg-image';
+
+  back.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (document.documentElement.classList.contains('dolly-active')) return;
+    const href = back.getAttribute('href');
+    prefetchHome();
+
+    if (reduceMotion) {
+      sessionStorage.setItem('pt-arrive-home', '1');
+      window.location.href = href;
+      return;
+    }
+
+    document.documentElement.classList.add('dolly-active');
+    const vw = innerWidth, vh = innerHeight, cx = vw / 2, cy = vh / 2;
+
+    const targets = Array.from(document.querySelectorAll(DOLLY_SELECTORS_BACK)).filter(el => {
+      const r = el.getBoundingClientRect();
+      return r.bottom > 0 && r.top < vh && r.right > 0 && r.left < vw && r.width > 0 && r.height > 0;
+    });
+
+    gsap.set(targets, { filter: 'blur(0px) brightness(1)', transformOrigin: '50% 50%', transformPerspective: 1400 });
+
+    const tl = gsap.timeline({
+      defaults: { ease: 'power2.in' },
+      onComplete: () => {
+        sessionStorage.setItem('pt-arrive-home', '1');
+        window.location.href = href;
+      }
+    });
+
+    targets.forEach(el => {
+      const r = el.getBoundingClientRect();
+      const dx = (r.left + r.width / 2 - cx) / cx;
+      const dy = (r.top + r.height / 2 - cy) / cy;
+      const isBack = el.contains(back) || el === back;
+      tl.to(el, {
+        z: isBack ? 60 : 340 + Math.random() * 90,
+        x: `+=${dx * 120}`,
+        y: `+=${dy * 120}`,
+        rotationX: dy * -5,
+        rotationY: dx * 5,
+        scale: isBack ? 1.06 : 1.2,
+        filter: 'blur(9px) brightness(0.5)',
+        duration: 0.85,
+      }, 0);
+    });
+
+    tl.to(back, { z: 140, scale: 1.15, filter: 'blur(4px) brightness(0.85)', transformPerspective: 1400, duration: 0.55 }, 0.15);
+
+    if (portal) {
+      tl.set(portal, { display: 'flex' }, 0)
+        .fromTo(portal, { opacity: 0, scale: 0.7 }, { opacity: 1, scale: 1, duration: 0.8, ease: 'power2.out' }, 0.2)
+        .fromTo(portal.querySelector('.dolly-portal-label'),
+          { opacity: 0, y: 16, scale: 0.94 },
+          { opacity: 1, y: 0, scale: 1, duration: 0.45, ease: 'power2.out' }, 0.5);
+    }
+  });
+
+  window.addEventListener('pageshow', (e) => {
+    if (!e.persisted) return;
+    gsap.killTweensOf(DOLLY_SELECTORS_BACK);
+    if (portal) gsap.killTweensOf(portal);
+    gsap.set(DOLLY_SELECTORS_BACK, { clearProps: 'all' });
+    if (portal) {
+      gsap.set(portal, { display: 'none', opacity: 0, scale: 0.7 });
+      gsap.set(portal.querySelector('.dolly-portal-label'), { opacity: 0 });
+    }
+    document.documentElement.classList.remove('dolly-active');
+  });
+})();
+
+/* ------------------------------------------------------------------------
+   Index-side arrival: the reverse half's landing. Mirrors the gallery-side
+   arrival block below, gated on pt-arriving-home instead of pt-arriving.
+   ------------------------------------------------------------------------ */
+(() => {
+  if (!document.documentElement.classList.contains('pt-arriving-home')) return;
+  document.documentElement.classList.remove('pt-arriving-home');
+
+  const portal = document.getElementById('dollyPortalHome');
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const targets = ['nav[data-app-nav]', 'header', '.hero', '.fieldlog', '#projects', '#experience', 'footer.site-footer', '.bg-image']
+    .map(sel => document.querySelector(sel)).filter(Boolean);
+
+  if (reduceMotion || typeof gsap === 'undefined') {
+    if (portal) portal.style.display = 'none';
+    targets.forEach(el => { el.style.opacity = ''; el.style.transform = ''; el.style.filter = ''; });
+    return;
+  }
+
+  gsap.set(targets, { opacity: 0, scale: 1.07, filter: 'blur(7px)', transformOrigin: '50% 50%', transformPerspective: 1400 });
+  if (portal) gsap.set(portal, { display: 'flex', opacity: 1, scale: 1 });
+
+  gsap.timeline({ delay: 0.05, defaults: { ease: 'power2.out' } })
+    .to(targets, { opacity: 1, scale: 1, filter: 'blur(0px)', duration: 0.9, stagger: 0.06 }, 0)
+    .to(portal, {
+      opacity: 0, scale: 1.15, duration: 0.7, ease: 'power2.inOut',
+      onComplete: () => { if (portal) portal.style.display = 'none'; }
+    }, 0.15);
+
+  window.addEventListener('pageshow', (e) => {
+    if (!e.persisted) return;
+    gsap.killTweensOf(targets);
+    if (portal) gsap.killTweensOf(portal);
+    gsap.set(targets, { clearProps: 'all' });
+    if (portal) { gsap.set(portal, { clearProps: 'all' }); portal.style.display = 'none'; }
+  });
+})();
+
+/* ------------------------------------------------------------------------
+   Gallery-side arrival: the reverse half of the shot above. gallery.html's
+   inline head script sets html.pt-arriving synchronously (before first
+   paint) whenever sessionStorage carries the pt-arrive flag, and renders
+   the portal already covering the screen via CSS - so there's never a
+   frame of bare gallery visible underneath. From here we just let the
+   portal recede while the real gallery settles in from a slightly
+   forward-pushed state, as if the camera never actually stopped moving.
+   ------------------------------------------------------------------------ */
+(() => {
+  if (!document.documentElement.classList.contains('pt-arriving')) return;
+  document.documentElement.classList.remove('pt-arriving');
+
+  const portal = document.getElementById('dollyPortal');
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const targets = ['.gallery-nav', '.gallery-page-head', '.photo-grid', '.bg-image']
+    .map(sel => document.querySelector(sel)).filter(Boolean);
+
+  if (reduceMotion || typeof gsap === 'undefined') {
+    if (portal) portal.style.display = 'none';
+    targets.forEach(el => { el.style.opacity = ''; el.style.transform = ''; el.style.filter = ''; });
+    return;
+  }
+
+  gsap.set(targets, { opacity: 0, scale: 1.07, filter: 'blur(7px)', transformOrigin: '50% 50%', transformPerspective: 1400 });
+  if (portal) gsap.set(portal, { display: 'flex', opacity: 1, scale: 1 });
+
+  gsap.timeline({ delay: 0.05, defaults: { ease: 'power2.out' } })
+    .to(targets, { opacity: 1, scale: 1, filter: 'blur(0px)', duration: 0.9, stagger: 0.06 }, 0)
+    .to(portal, {
+      opacity: 0, scale: 1.15, duration: 0.7, ease: 'power2.inOut',
+      onComplete: () => { if (portal) portal.style.display = 'none'; }
+    }, 0.15);
+
+  // Same bfcache guard as index.html: if gallery.html itself gets restored
+  // from bfcache mid-arrival, clear the leftover blur/scale/opacity so it
+  // doesn't come back looking half-materialized.
+  window.addEventListener('pageshow', (e) => {
+    if (!e.persisted) return;
+    gsap.killTweensOf(targets);
+    if (portal) gsap.killTweensOf(portal);
+    gsap.set(targets, { clearProps: 'all' });
+    if (portal) { gsap.set(portal, { clearProps: 'all' }); portal.style.display = 'none'; }
+  });
 })();

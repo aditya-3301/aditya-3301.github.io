@@ -48,6 +48,16 @@ force-disables `backdrop-filter` while a page transition is mid-flight),
 Safari fallbacks for the SVG-filter glass effect, and low-power-device
 overrides.
 
+Two nav-bar fixes worth knowing about if you're touching `.nav-indicator`
+or the top nav links:
+- `.nav-indicator` is centered with `top:50%; transform:translateY(-50%)`
+  rather than a hardcoded `top` offset, so it stays centered regardless of
+  link height. `moveIndicator()` in `interactions.js` only tweens `x`/`width`
+  on it, so this centering survives those tweens untouched.
+- `nav[data-app-nav] a, #mobileNav a` have an explicit
+  `text-decoration:none` — without it the links fall back to the browser's
+  default underline (faint but present on the dimmer links).
+
 ---
 
 ## JavaScript

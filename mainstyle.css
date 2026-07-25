@@ -23,6 +23,13 @@
     --nav-pad-h: 6px;
     --nav-bg-1-a: 0.10;
     --nav-bg-2-a: 0.03;
+
+    /* Single source of truth for the "Aditya" name treatment, shared by
+       .hero h1 and .dolly-name (the transition portal text) so the two
+       can never silently drift apart again. */
+    --name-size: clamp(2.6rem, 7.5vw, 7rem);
+    --name-weight: 600;
+    --name-tracking: -0.025em;
   }
   /* Section-based accent theming: shifts only --rust (used by section-num,
      eyebrow, selection color, active-nav-pill contrast) as you scroll between
@@ -67,8 +74,8 @@
      .hero h1, so it can sit directly under the real hero name and read as
      the same element rather than a placeholder being swapped out. */
   .dolly-name{
-    font-family:'Newsreader', serif; font-weight:600; font-style:normal;
-    font-size:clamp(2.6rem,7.5vw,7rem); line-height:0.94; letter-spacing:-0.025em;
+    font-family:'Newsreader', serif; font-weight:var(--name-weight); font-style:normal;
+    font-size:var(--name-size); line-height:0.94; letter-spacing:var(--name-tracking);
   }
   .dolly-name .letters{ text-shadow:0 0 24px rgba(138,154,91,0.25), 0 0 64px rgba(138,154,91,0.12); }
   /* "Shankar" half - mirrors .hero h1 em/.lang-cycle (italic, moss, ~0.68x). */
@@ -197,10 +204,10 @@
     opacity:0.85;
   }
   .hero h1{
-    font-family:'Newsreader', serif; font-weight:600;
-    font-size:clamp(2.6rem, 7.5vw, 7rem);
+    font-family:'Newsreader', serif; font-weight:var(--name-weight);
+    font-size:var(--name-size);
     line-height:0.94;
-    letter-spacing:-0.025em;
+    letter-spacing:var(--name-tracking);
     display:flex; flex-wrap:nowrap; align-items:baseline; justify-content:center;
     gap:0.3em; max-width:100%;
   }
@@ -564,7 +571,7 @@
   body.has-custom-cursor a, body.has-custom-cursor .specimen, body.has-custom-cursor .letters .letter { cursor: none; }
   .cursor-dot, .cursor-ring {
     position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9999;
-    border-radius: 50%; transform: translate(-50%, -50%);
+    border-radius: 50%;
     opacity: 0; transition: opacity 0.3s;
   }
   body.has-custom-cursor .cursor-dot, body.has-custom-cursor .cursor-ring { opacity: 1; }

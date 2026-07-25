@@ -180,13 +180,15 @@
      in the script at the bottom of the page. */
   .nav-indicator{
     position:absolute; height:32px; border-radius:999px;
-    background:var(--moss); opacity:0; z-index:0; top:4px; left:0;
+    background:var(--moss); opacity:0; z-index:0; top:50%; left:0;
+    transform:translateY(-50%);
     pointer-events:none;
   }
   /* Text goes dark-on-moss when a link's pill is active. The link text itself
      lives in a nested <span> with its own hardcoded color class, so the color
      override has to target that span directly (not just the parent <a>). */
   nav[data-app-nav] a.active span{ color:var(--bg) !important; }
+  nav[data-app-nav] a, #mobileNav a{ text-decoration:none; }
   .wave{ display:flex; align-items:center; gap:8px; color:var(--moss); }
   .wave span{ font-size:15px; }
   .clock{ text-align:right; line-height:1.3; }
@@ -331,7 +333,7 @@
     transform: translateZ(0);
     backface-visibility: hidden;
   }
-  /* Low-power devices (see LOW_POWER detection in mainscript.js, which sets
+  /* Low-power devices (see LOW_POWER detection in core.js, which sets
      body.low-power) get the small compressed webp instead of the 424KB
      full-res original - everyone else gets full res. */
   body.low-power .bg-image{ background-image:url('media/backgrounds/home-compressed.webp'); }
@@ -368,7 +370,7 @@
     -webkit-backdrop-filter: blur(12px) saturate(180%) !important;
   }
 
-  /* Low-power tier (body.low-power, set by mainscript.js from deviceMemory/
+  /* Low-power tier (body.low-power, set by core.js from deviceMemory/
      hardwareConcurrency/coarse-pointer): the per-pixel SVG feDisplacementMap
      distortion behind these glass surfaces is the single most expensive paint
      op on the page on a weak GPU. Swap it for plain blur+saturate, same as the
@@ -468,7 +470,8 @@
     transition:.2s ease;
   }
   .tag-chip:hover{
-    box-shadow:rgba(255,255,255,0.12) 0px 0px 0px 0.5px inset, rgba(0,0,0,0.18) 0px 6px 20px;
+    box-shadow:rgba(255,255,255,0.12) 0px 0px 0px 0.5px inset, rgba(0,0,0,0.18) 0px 6px 20px,
+               0 0 18px rgba(138,154,91,0.22);
     transform:translateY(-2px); color:var(--ink); border-color:rgba(138,154,91,0.35);
   }
   .tag-chip:focus-visible{ outline:2px solid var(--moss); outline-offset:3px; }
@@ -485,7 +488,8 @@
     transition:.22s ease;
   }
   .photo-cta:hover{
-    box-shadow:rgba(255,255,255,0.13) 0px 0px 0px 0.5px inset, rgba(0,0,0,0.18) 0px 6px 20px;
+    box-shadow:rgba(255,255,255,0.13) 0px 0px 0px 0.5px inset, rgba(0,0,0,0.18) 0px 6px 20px,
+               0 0 22px rgba(138,154,91,0.25);
     transform:translateY(-2px); color:var(--ink); border-color:rgba(138,154,91,0.3);
   }
   .photo-cta:focus-visible{ outline:2px solid var(--moss); outline-offset:3px; }
@@ -628,7 +632,7 @@
   }
 
   /* -- Specimen cards: cursor-follow spotlight (uses the --x/--y vars
-        mainscript.js already writes on mousemove) -- */
+        interactions.js already writes on mousemove) -- */
   .specimen::after{
     content:""; position:absolute; inset:0; border-radius:inherit;
     pointer-events:none; z-index:1;
@@ -658,7 +662,7 @@
   .fieldlog-track span:nth-child(4n)   b{ color:var(--clay);  text-shadow:0 0 12px rgba(181,101,74,0.4); }
 
   /* -- Section headings: gradient underline draws in with the reveal
-        (mainscript.js adds .head-inview in the existing onEnter) -- */
+        (core.js adds .head-inview in the existing onEnter) -- */
   .section-head h2{ position:relative; padding-bottom:8px; }
   .section-head h2::after{
     content:""; position:absolute; left:0; bottom:0; height:2px; width:100%;
@@ -669,17 +673,9 @@
   }
   .section-head.head-inview h2::after{ transform:scaleX(1); }
 
-  /* -- Tag chips + photo CTA: moss glow joins the lift on hover -- */
-  .tag-chip:hover{
-    box-shadow: rgba(255,255,255,0.12) 0px 0px 0px 0.5px inset,
-                rgba(0,0,0,0.18) 0px 6px 20px,
-                0 0 18px rgba(138,154,91,0.22);
-  }
-  .photo-cta:hover{
-    box-shadow: rgba(255,255,255,0.13) 0px 0px 0px 0.5px inset,
-                rgba(0,0,0,0.18) 0px 6px 20px,
-                0 0 22px rgba(138,154,91,0.25);
-  }
+  /* -- Tag chips + photo CTA hover glow merged into their base :hover
+        rules above, rather than living here as a second, easy-to-miss
+        declaration for the same selector. -- */
 
   /* -- Photo grid: simple hover lift only -- */
   .photo-card{

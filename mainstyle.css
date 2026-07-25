@@ -58,6 +58,54 @@
     font-family:'Newsreader', serif; font-weight:500; font-style:italic;
     font-size:clamp(1.6rem,3vw,2.4rem); letter-spacing:0.02em; color:var(--ink);
     opacity:0;
+    /* Roughly where .hero h1 actually sits (eyebrow above it is shorter than
+       the tagline below), so the portal text doesn't hand off to a hero name
+       that visibly jumps up as it takes over. */
+    margin-top:-3vh;
+  }
+  /* "Aditya" half of the portal text - sized/weighted to be pixel-close to
+     .hero h1, so it can sit directly under the real hero name and read as
+     the same element rather than a placeholder being swapped out. */
+  .dolly-name{
+    font-family:'Newsreader', serif; font-weight:600; font-style:normal;
+    font-size:clamp(2.6rem,7.5vw,7rem); line-height:0.94; letter-spacing:-0.025em;
+  }
+  .dolly-name .letters{ text-shadow:0 0 24px rgba(138,154,91,0.25), 0 0 64px rgba(138,154,91,0.12); }
+  /* "Shankar" half - mirrors .hero h1 em/.lang-cycle (italic, moss, ~0.68x). */
+  .dolly-surname{
+    font-family:'Newsreader', serif; font-weight:500; font-style:italic; color:var(--moss);
+    font-size:clamp(1.77rem,5.1vw,4.76rem); text-shadow:0 0 22px rgba(138,154,91,0.35);
+  }
+
+  /* --- Aggressive perf mode, scoped ONLY to html.dolly-active ---
+     These effects buy nothing once the element is about to be pushed into
+     blur/blackness by the dolly tween anyway, but they're some of the most
+     expensive paint ops on the page (SVG feDisplacementMap backdrop-filter
+     especially, recomputed every frame while the same element is also under
+     a 3D transform+blur). Stripping them only during the transition window
+     keeps the resting-state visuals untouched. */
+  html.dolly-active [data-app-nav] div[style*="glass-filter"],
+  html.dolly-active .gallery-nav-inner,
+  html.dolly-active .photo-subnav-inner,
+  html.dolly-active .specimen,
+  html.dolly-active .tag-chip,
+  html.dolly-active .fieldlog,
+  html.pt-arriving [data-app-nav] div[style*="glass-filter"],
+  html.pt-arriving .gallery-nav-inner,
+  html.pt-arriving .photo-subnav-inner,
+  html.pt-arriving .fieldlog,
+  html.pt-arriving-home [data-app-nav] div[style*="glass-filter"],
+  html.pt-arriving-home .fieldlog{
+    backdrop-filter:none !important;
+    -webkit-backdrop-filter:none !important;
+  }
+  html.dolly-active .hero h1 .letters,
+  html.dolly-active .hero h1 em,
+  html.dolly-active .dolly-name .letters,
+  html.dolly-active .dolly-surname,
+  html.pt-arriving-home .hero h1 .letters,
+  html.pt-arriving-home .hero h1 em{
+    text-shadow:none !important;
   }
 
   /* --------------------------------------------------------------

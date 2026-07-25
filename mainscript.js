@@ -115,8 +115,18 @@
         }
       }
     }
-    if (!reduceMotion && !paused) requestAnimationFrame(step);
+    if (!reduceMotion && !paused && !window.__dollyPaused) requestAnimationFrame(step);
   }
+
+  // Called by the dolly transitions (mainscript.js, further down) - the
+  // canvas is one of the elements they blur/scale into the portal, so
+  // there's no point still paying for its per-frame particle math while
+  // it's unreadable anyway. Resuming re-arms the loop from scratch.
+  window.__dollyParticlePause = () => { window.__dollyPaused = true; };
+  window.__dollyParticleResume = () => {
+    window.__dollyPaused = false;
+    if (!reduceMotion && !paused) requestAnimationFrame(step);
+  };
 
   // Stop the rAF loop entirely while the tab/app is backgrounded - a canvas
   // nobody can see was previously still repainting ~60x/sec on every device.
@@ -948,7 +958,8 @@ tick(); setInterval(tick, 1000*30);
       return r.bottom > 0 && r.top < vh && r.right > 0 && r.left < vw && r.width > 0 && r.height > 0;
     });
 
-    gsap.set(targets, { filter: 'blur(0px) brightness(1)', transformOrigin: '50% 50%', transformPerspective: 1400 });
+    window.__dollyParticlePause && window.__dollyParticlePause();
+    gsap.set(targets, { filter: 'blur(0px) brightness(1)', transformOrigin: '50% 50%', transformPerspective: 1400, willChange: 'transform, filter' });
 
     const tl = gsap.timeline({
       defaults: { ease: 'power2.in' },
@@ -1004,6 +1015,7 @@ tick(); setInterval(tick, 1000*30);
     gsap.set(portal, { display: 'none', opacity: 0, scale: 0.7 });
     gsap.set(portal.querySelector('.dolly-portal-label'), { opacity: 0 });
     document.documentElement.classList.remove('dolly-active');
+    window.__dollyParticleResume && window.__dollyParticleResume();
   });
 })();
 
@@ -1031,7 +1043,18 @@ tick(); setInterval(tick, 1000*30);
   back.addEventListener('focus', prefetchHome, { once: true });
 
   const portal = document.getElementById('dollyPortal');
-  if (portal) portal.querySelector('.dolly-portal-label').textContent = 'Aditya Shankar';
+  // innerHTML (not textContent) so the "Aditya" half can reuse the exact same
+  // per-letter coloured spans as the hero h1 - that's what lets the portal
+  // text sit under the real hero name without a visible recolour/reflow snap.
+  if (portal) portal.querySelector('.dolly-portal-label').innerHTML =
+    '<span class="dolly-name"><span class="letters">' +
+    '<span class="letter" style="--hc:var(--rust)">A</span>' +
+    '<span class="letter" style="--hc:var(--moss)">d</span>' +
+    '<span class="letter" style="--hc:var(--amber)">i</span>' +
+    '<span class="letter" style="--hc:var(--teal)">t</span>' +
+    '<span class="letter" style="--hc:var(--clay)">y</span>' +
+    '<span class="letter" style="--hc:var(--sage)">a</span>' +
+    '</span></span> <span class="dolly-surname">Shankar</span>';
 
   const DOLLY_SELECTORS_BACK = '.gallery-nav, .gallery-page-head, .photo-grid, .bg-image';
 
@@ -1055,7 +1078,8 @@ tick(); setInterval(tick, 1000*30);
       return r.bottom > 0 && r.top < vh && r.right > 0 && r.left < vw && r.width > 0 && r.height > 0;
     });
 
-    gsap.set(targets, { filter: 'blur(0px) brightness(1)', transformOrigin: '50% 50%', transformPerspective: 1400 });
+    window.__dollyParticlePause && window.__dollyParticlePause();
+    gsap.set(targets, { filter: 'blur(0px) brightness(1)', transformOrigin: '50% 50%', transformPerspective: 1400, willChange: 'transform, filter' });
 
     const tl = gsap.timeline({
       defaults: { ease: 'power2.in' },
@@ -1103,6 +1127,7 @@ tick(); setInterval(tick, 1000*30);
       gsap.set(portal.querySelector('.dolly-portal-label'), { opacity: 0 });
     }
     document.documentElement.classList.remove('dolly-active');
+    window.__dollyParticleResume && window.__dollyParticleResume();
   });
 })();
 
@@ -1132,7 +1157,7 @@ tick(); setInterval(tick, 1000*30);
     .to(targets, { opacity: 1, scale: 1, filter: 'blur(0px)', duration: 0.9, stagger: 0.06 }, 0)
     .to(portal, {
       opacity: 0, scale: 1.15, duration: 0.7, ease: 'power2.inOut',
-      onComplete: () => { if (portal) portal.style.display = 'none'; }
+      onComplete: () => { if (portal) portal.style.display = 'none'; document.documentElement.classList.remove('dolly-active'); }
     }, 0.15);
 
   window.addEventListener('pageshow', (e) => {
@@ -1141,6 +1166,7 @@ tick(); setInterval(tick, 1000*30);
     if (portal) gsap.killTweensOf(portal);
     gsap.set(targets, { clearProps: 'all' });
     if (portal) { gsap.set(portal, { clearProps: 'all' }); portal.style.display = 'none'; }
+    document.documentElement.classList.remove('dolly-active');
   });
 })();
 
@@ -1175,7 +1201,7 @@ tick(); setInterval(tick, 1000*30);
     .to(targets, { opacity: 1, scale: 1, filter: 'blur(0px)', duration: 0.9, stagger: 0.06 }, 0)
     .to(portal, {
       opacity: 0, scale: 1.15, duration: 0.7, ease: 'power2.inOut',
-      onComplete: () => { if (portal) portal.style.display = 'none'; }
+      onComplete: () => { if (portal) portal.style.display = 'none'; document.documentElement.classList.remove('dolly-active'); }
     }, 0.15);
 
   // Same bfcache guard as index.html: if gallery.html itself gets restored
@@ -1187,5 +1213,6 @@ tick(); setInterval(tick, 1000*30);
     if (portal) gsap.killTweensOf(portal);
     gsap.set(targets, { clearProps: 'all' });
     if (portal) { gsap.set(portal, { clearProps: 'all' }); portal.style.display = 'none'; }
+    document.documentElement.classList.remove('dolly-active');
   });
 })();

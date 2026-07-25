@@ -23,6 +23,13 @@
     --nav-pad-h: 6px;
     --nav-bg-1-a: 0.10;
     --nav-bg-2-a: 0.03;
+
+    /* Single source of truth for the "Aditya" name treatment, shared by
+       .hero h1 and .dolly-name (the transition portal text) so the two
+       can never silently drift apart again. */
+    --name-size: clamp(2.6rem, 7.5vw, 7rem);
+    --name-weight: 600;
+    --name-tracking: -0.025em;
   }
   /* Section-based accent theming: shifts only --rust (used by section-num,
      eyebrow, selection color, active-nav-pill contrast) as you scroll between
@@ -58,6 +65,54 @@
     font-family:'Newsreader', serif; font-weight:500; font-style:italic;
     font-size:clamp(1.6rem,3vw,2.4rem); letter-spacing:0.02em; color:var(--ink);
     opacity:0;
+    /* Roughly where .hero h1 actually sits (eyebrow above it is shorter than
+       the tagline below), so the portal text doesn't hand off to a hero name
+       that visibly jumps up as it takes over. */
+    margin-top:-3vh;
+  }
+  /* "Aditya" half of the portal text - sized/weighted to be pixel-close to
+     .hero h1, so it can sit directly under the real hero name and read as
+     the same element rather than a placeholder being swapped out. */
+  .dolly-name{
+    font-family:'Newsreader', serif; font-weight:var(--name-weight); font-style:normal;
+    font-size:var(--name-size); line-height:0.94; letter-spacing:var(--name-tracking);
+  }
+  .dolly-name .letters{ text-shadow:0 0 24px rgba(138,154,91,0.25), 0 0 64px rgba(138,154,91,0.12); }
+  /* "Shankar" half - mirrors .hero h1 em/.lang-cycle (italic, moss, ~0.68x). */
+  .dolly-surname{
+    font-family:'Newsreader', serif; font-weight:500; font-style:italic; color:var(--moss);
+    font-size:clamp(1.77rem,5.1vw,4.76rem); text-shadow:0 0 22px rgba(138,154,91,0.35);
+  }
+
+  /* --- Aggressive perf mode, scoped ONLY to html.dolly-active ---
+     These effects buy nothing once the element is about to be pushed into
+     blur/blackness by the dolly tween anyway, but they're some of the most
+     expensive paint ops on the page (SVG feDisplacementMap backdrop-filter
+     especially, recomputed every frame while the same element is also under
+     a 3D transform+blur). Stripping them only during the transition window
+     keeps the resting-state visuals untouched. */
+  html.dolly-active [data-app-nav] div[style*="glass-filter"],
+  html.dolly-active .gallery-nav-inner,
+  html.dolly-active .photo-subnav-inner,
+  html.dolly-active .specimen,
+  html.dolly-active .tag-chip,
+  html.dolly-active .fieldlog,
+  html.pt-arriving [data-app-nav] div[style*="glass-filter"],
+  html.pt-arriving .gallery-nav-inner,
+  html.pt-arriving .photo-subnav-inner,
+  html.pt-arriving .fieldlog,
+  html.pt-arriving-home [data-app-nav] div[style*="glass-filter"],
+  html.pt-arriving-home .fieldlog{
+    backdrop-filter:none !important;
+    -webkit-backdrop-filter:none !important;
+  }
+  html.dolly-active .hero h1 .letters,
+  html.dolly-active .hero h1 em,
+  html.dolly-active .dolly-name .letters,
+  html.dolly-active .dolly-surname,
+  html.pt-arriving-home .hero h1 .letters,
+  html.pt-arriving-home .hero h1 em{
+    text-shadow:none !important;
   }
 
   /* --------------------------------------------------------------
@@ -149,10 +204,10 @@
     opacity:0.85;
   }
   .hero h1{
-    font-family:'Newsreader', serif; font-weight:600;
-    font-size:clamp(2.6rem, 7.5vw, 7rem);
+    font-family:'Newsreader', serif; font-weight:var(--name-weight);
+    font-size:var(--name-size);
     line-height:0.94;
-    letter-spacing:-0.025em;
+    letter-spacing:var(--name-tracking);
     display:flex; flex-wrap:nowrap; align-items:baseline; justify-content:center;
     gap:0.3em; max-width:100%;
   }
@@ -516,7 +571,7 @@
   body.has-custom-cursor a, body.has-custom-cursor .specimen, body.has-custom-cursor .letters .letter { cursor: none; }
   .cursor-dot, .cursor-ring {
     position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9999;
-    border-radius: 50%; transform: translate(-50%, -50%);
+    border-radius: 50%;
     opacity: 0; transition: opacity 0.3s;
   }
   body.has-custom-cursor .cursor-dot, body.has-custom-cursor .cursor-ring { opacity: 1; }

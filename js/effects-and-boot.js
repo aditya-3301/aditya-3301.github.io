@@ -4,6 +4,28 @@
 // window.createNavScrollspyTriggers() (defined in interactions.js), and
 // relies on ScrollTrigger/Lenis already being set up by core.js.
 (function(){
+  // Easter egg: a little signature for anyone poking around devtools.
+  // Kept outside the gsap guard below so it still fires even if GSAP
+  // failed to load for some reason.
+  const boxWidth = 30;
+  const label = 'ADITYA SHANKAR';
+  const pad = Math.floor((boxWidth - label.length) / 2);
+  const banner =
+    '┌' + '─'.repeat(boxWidth) + '┐\n' +
+    '│' + ' '.repeat(pad) + label + ' '.repeat(boxWidth - pad - label.length) + '│\n' +
+    '└' + '─'.repeat(boxWidth) + '┘';
+  // A single console.log call, Discord-style: one big styled entry rather
+  // than several small ones, so devtools can't collapse/group it away.
+  console.log(
+    '%c' + banner + '\n\n%cPoking around in here, huh? I like the curiosity.' +
+    '\n%cBuilt with GSAP, Lenis, and more SVG backdrop-filters than is strictly reasonable.' +
+    '\n%cCode lives at github.com/aditya-3301',
+    'color:#8A9A5B;font-family:monospace;font-size:16px;font-weight:bold;line-height:1.4;',
+    'color:#EDE6D6;font-family:monospace;font-size:13px;',
+    'color:#B8B0A0;font-family:monospace;font-size:11px;',
+    'color:#4C8C86;font-family:monospace;font-size:11px;'
+  );
+
   if (typeof gsap === 'undefined') return;
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const LOW_POWER = (navigator.deviceMemory && navigator.deviceMemory <= 4)

@@ -165,15 +165,16 @@
   }
 
   /* Lightbox: click a photo card to open its full-res version (or play its
-     video, for the one storms card backed by an actual .mp4 clip). */
+     video, for the one storms card backed by an actual .mp4 clip). Left/right
+     arrow keys step to the next/previous photo in the currently filtered set
+     without closing the lightbox. */
   const lightbox = document.getElementById('photoLightbox');
   const lightboxImg = document.getElementById('photoLightboxImg');
   const lightboxVideo = document.getElementById('photoLightboxVideo');
   const lightboxClose = document.getElementById('photoLightboxClose');
+  let currentCard = null;
   if (photoGrid && lightbox && lightboxImg) {
-    photoGrid.addEventListener('click', (e) => {
-      const card = e.target.closest('.photo-card');
-      if (!card) return;
+    const showCard = (card) => {
       const img = card.querySelector('img');
       if (img.dataset.video) {
         lightboxImg.style.display = 'none';
@@ -188,6 +189,24 @@
         lightboxImg.src = img.dataset.full || img.src;
         lightboxImg.alt = img.alt;
       }
+      currentCard = card;
+    };
+
+    // Re-queried on every step rather than cached once, so arrow nav always
+    // matches whatever the category filter currently has visible.
+    const visibleCards = () => Array.from(photoGrid.querySelectorAll('.photo-card:not(.hidden-cat)'));
+
+    const stepLightbox = (delta) => {
+      const cards = visibleCards();
+      const i = cards.indexOf(currentCard);
+      if (i === -1 || !cards.length) return;
+      showCard(cards[(i + delta + cards.length) % cards.length]);
+    };
+
+    photoGrid.addEventListener('click', (e) => {
+      const card = e.target.closest('.photo-card');
+      if (!card) return;
+      showCard(card);
       lightbox.classList.add('visible');
     });
     const closeLightbox = () => {
@@ -195,10 +214,16 @@
       lightboxImg.src = '';
       lightboxVideo.pause();
       lightboxVideo.src = '';
+      currentCard = null;
     };
     lightboxClose.addEventListener('click', closeLightbox);
     lightbox.addEventListener('click', (e) => { if (e.target === lightbox) closeLightbox(); });
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeLightbox(); });
+    document.addEventListener('keydown', (e) => {
+      if (!lightbox.classList.contains('visible')) return;
+      if (e.key === 'Escape') closeLightbox();
+      else if (e.key === 'ArrowRight') { e.preventDefault(); stepLightbox(1); }
+      else if (e.key === 'ArrowLeft') { e.preventDefault(); stepLightbox(-1); }
+    });
   }
 
   function isTouchDevice(){ return window.matchMedia('(pointer: coarse)').matches; }

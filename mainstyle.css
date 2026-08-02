@@ -115,6 +115,65 @@
     text-shadow:none !important;
   }
 
+  /* --- Perf mode, round 2: everything below is pure paint/compositing cost
+     that the eye can't register anyway once the dolly tween is running (the
+     targets are already mid-blur/mid-transform), so it's stripped for the
+     full window instead of just the glass elements above. All scoped to the
+     same three transition classes, so resting-state visuals never change. */
+
+  /* JS already stops the particle-bg rAF loop (__dollyParticlePause), but the
+     canvas element itself stays in the paint/composite tree until it's
+     actually removed from rendering - visibility:hidden takes it out
+     entirely for the duration instead of just leaving it static. */
+  html.dolly-active #particle-bg,
+  html.pt-arriving #particle-bg,
+  html.pt-arriving-home #particle-bg{
+    visibility:hidden !important;
+  }
+
+  /* Custom cursor (dot/ring) tracks the mouse every frame via GSAP
+     quickSetter - real work, but invisible under cursor:wait + a portal
+     covering the screen. */
+  html.dolly-active .cursor-dot,
+  html.dolly-active .cursor-ring{
+    display:none !important;
+  }
+
+  /* Any CSS-driven animation/transition not part of the dolly tween itself
+     (GSAP drives the tween via inline transform/filter, not @keyframes, so
+     this can't touch it) - the field-log ticker, lang-cycle swap, footer
+     line, nav pill hover states, magnetic-hover transitions, etc. all stop
+     costing a frame the instant the transition starts. */
+  html.dolly-active *:not(.dolly-portal):not(.dolly-portal *),
+  html.pt-arriving *:not(.dolly-portal):not(.dolly-portal *),
+  html.pt-arriving-home *:not(.dolly-portal):not(.dolly-portal *){
+    animation-play-state:paused !important;
+    transition:none !important;
+  }
+
+  /* Hover/magnetic-pull/tilt listeners in JS still fire on mousemove, but
+     with the cursor forced to "wait" and a portal over the screen there's
+     no real interaction happening - killing pointer-events stops the
+     browser's hit-testing/hover recalculation on every element under the
+     (motionless) pointer for free. */
+  html.dolly-active body *{
+    pointer-events:none !important;
+  }
+  html.dolly-active .dolly-portal{ pointer-events:auto; }
+
+  /* Remaining box-shadow/filter costs on elements that aren't already being
+     blurred by the dolly tween (nav pill glow, tag chips, project cards
+     off-screen, etc.) - matches the text-shadow strip above. */
+  html.dolly-active *,
+  html.pt-arriving *,
+  html.pt-arriving-home *{
+    box-shadow:none !important;
+  }
+  html.dolly-active .dolly-portal,
+  html.dolly-active .dolly-portal *{
+    box-shadow:revert !important;
+  }
+
   /* --------------------------------------------------------------
      Minimal utility classes replacing the Tailwind CDN (issue #17).
      Only the utilities actually used by the nav markup in index.html;

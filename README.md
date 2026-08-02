@@ -1,4 +1,4 @@
-# Site structure
+# Site structure - purely for LLM's to get context when generating extensions for the website.
 
 ```
 /

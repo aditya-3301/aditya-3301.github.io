@@ -91,18 +91,9 @@
      especially, recomputed every frame while the same element is also under
      a 3D transform+blur). Stripping them only during the transition window
      keeps the resting-state visuals untouched. */
-  html.dolly-active [data-app-nav] div[style*="glass-filter"],
-  html.dolly-active .gallery-nav-inner,
-  html.dolly-active .photo-subnav-inner,
-  html.dolly-active .specimen,
-  html.dolly-active .tag-chip,
-  html.dolly-active .fieldlog,
-  html.pt-arriving [data-app-nav] div[style*="glass-filter"],
-  html.pt-arriving .gallery-nav-inner,
-  html.pt-arriving .photo-subnav-inner,
-  html.pt-arriving .fieldlog,
-  html.pt-arriving-home [data-app-nav] div[style*="glass-filter"],
-  html.pt-arriving-home .fieldlog{
+  html.dolly-active *,
+  html.pt-arriving *,
+  html.pt-arriving-home *{
     backdrop-filter:none !important;
     -webkit-backdrop-filter:none !important;
   }

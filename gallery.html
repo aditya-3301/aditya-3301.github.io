@@ -47,11 +47,31 @@
     backdrop-filter: blur(10px) saturate(160%) brightness(110%);
     -webkit-backdrop-filter: blur(10px) saturate(160%) brightness(110%);
     box-shadow:rgba(255,255,255,0.1) 0px 0px 0px 0.5px inset, rgba(0,0,0,0.1) 0px 4px 16px;
+    max-width:100%;
   }
   .gallery-nav-back{
     font-family:'Newsreader', serif; font-size:1rem; color:var(--ink);
     text-decoration:none; padding:7px 14px; border-radius:14px; opacity:0.9;
-    transition:.2s ease;
+    transition:.2s ease; flex-shrink:0;
+  }
+  /* Mobile: the back link + 7 category pills don't fit one row on a phone
+     width - they were overflowing the centered pill and clipping "Aditya"
+     off the left edge. Let the category strip scroll horizontally instead
+     of wrapping (wrapping would break the pill's fixed height/shape), and
+     pin the back link so it never scrolls out of view. */
+  @media (max-width:640px){
+    .gallery-nav-inner{
+      max-width:calc(100vw - 32px);
+    }
+    .gallery-nav-back{
+      position:sticky; left:0; z-index:1;
+      background:rgba(20,18,15,0.55);
+    }
+    #photoSubnav.photo-subnav-inner{
+      overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch;
+    }
+    #photoSubnav.photo-subnav-inner::-webkit-scrollbar{ display:none; }
+    #photoSubnav .photo-subnav-cat{ flex-shrink:0; }
   }
   .gallery-nav-back:hover{ opacity:1; background:rgba(255,255,255,0.08); }
   .gallery-page-head{

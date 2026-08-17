@@ -304,7 +304,7 @@ function forceGlassRepaint(){
     .to(navEl || [], { opacity: 1, duration: 0.9 }, 0)
     .to(portal, {
       opacity: 0, scale: 1.15, duration: 0.7, ease: 'power2.inOut',
-      onComplete: () => { if (portal) portal.style.display = 'none'; document.documentElement.classList.remove('dolly-active'); }
+      onComplete: () => { if (portal) portal.style.display = 'none'; document.documentElement.classList.remove('dolly-active'); forceGlassRepaint(); }
     }, 0.15);
 
   window.addEventListener('pageshow', (e) => {
@@ -314,6 +314,7 @@ function forceGlassRepaint(){
     gsap.set(targets, { clearProps: 'all' });
     if (portal) { gsap.set(portal, { clearProps: 'all' }); portal.style.display = 'none'; }
     document.documentElement.classList.remove('dolly-active');
+    forceGlassRepaint();
   });
 })();
 

@@ -1,0 +1,8 @@
+# Aditya Shankar
+
+> Personal portfolio site for me, a CS student at BITS Pilani Hyderabad.
+
+## Pages
+
+- [Home](https://player3301.pages.dev/): Projects, experience, and background.
+- [Photography](https://player3301.pages.dev/gallery.html): Photo gallery — astro, storms, wildlife, landscape, food, architecture, night.

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://player3301.pages.dev/sitemap.xml
